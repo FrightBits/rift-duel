@@ -4,37 +4,37 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Rift Duel</title>
-<meta name="description" content="1v1 League of Legends trivia. Send a friend the invite link and race to answer first.">
+<meta name="description" content="1v1 League of Legends trivia where the most obscure correct answer wins. Send a friend the invite link.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js"></script>
 <style>
 :root{
-  --bg:#0a0f1a; --bg2:#111a2b; --card:#152238; --card2:#1b2b46; --line:#26385a;
-  --text:#eef2f8; --muted:#8a9bb8; --gold:#e3b65b; --gold2:#f4d48a;
-  --teal:#2ec4c4; --red:#ff5d6c; --green:#3ddc84; --you:#2ec4c4; --opp:#ff8a4c;
+  --bg:#06101c; --bg2:#0c1a2b; --card:#10233a; --card2:#163052; --line:#21405f;
+  --text:#eef6fb; --muted:#86a3bd; --gold:#e3b65b; --gold2:#f4d48a;
+  --red:#ff5d6c; --green:#3ddc84; --you:#3fe0d0; --opp:#ff9a5c;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
-body{background:radial-gradient(1200px 600px at 50% -10%,#1a2a48 0%,var(--bg) 60%);background-color:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:16px}
-h1,h2,h3,.disp{font-family:Rajdhani,Inter,sans-serif;letter-spacing:.02em}
+body{background:radial-gradient(1200px 600px at 50% -10%,#123555 0%,var(--bg) 60%);background-color:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:16px}
+h1,h2,h3{font-family:Rajdhani,Inter,sans-serif;letter-spacing:.02em}
 button{font:inherit;cursor:pointer;border:none;color:inherit}
 input{font:inherit;color:var(--text)}
-.wrap{width:100%;max-width:760px;flex:1;display:flex;flex-direction:column}
-header{display:flex;align-items:center;justify-content:space-between;padding:6px 0 18px}
+.wrap{width:100%;max-width:780px;flex:1;display:flex;flex-direction:column}
+header{display:flex;align-items:center;justify-content:space-between;padding:6px 0 16px}
 .logo{display:flex;align-items:center;gap:10px;font-family:Rajdhani;font-weight:700;font-size:26px}
-.logo .gem{width:30px;height:30px;transform:rotate(45deg);border:2px solid var(--gold);background:linear-gradient(135deg,#2a3d63,#0d1526);box-shadow:0 0 18px #e3b65b55}
+.logo .gem{width:30px;height:30px;transform:rotate(45deg);border:2px solid var(--gold);background:linear-gradient(135deg,#1f4d73,#071423);box-shadow:0 0 18px #e3b65b55}
 .logo span b{color:var(--gold)}
 .pill{font-size:12px;color:var(--muted);border:1px solid var(--line);padding:5px 10px;border-radius:999px}
 .screen{display:none;flex:1;flex-direction:column}
 .screen.on{display:flex}
 .panel{background:linear-gradient(180deg,var(--card),var(--bg2));border:1px solid var(--line);border-radius:16px;padding:24px}
-.hero{text-align:center;padding:24px 0 22px}
-.hero h1{font-size:clamp(38px,8vw,60px);line-height:1;font-weight:700}
+.hero{text-align:center;padding:20px 0}
+.hero h1{font-size:clamp(36px,8vw,58px);line-height:1;font-weight:700}
 .hero h1 em{font-style:normal;color:var(--gold)}
 .hero p{color:var(--muted);margin-top:10px}
 label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px;font-weight:600}
-.field{width:100%;background:#0b1322;border:1px solid var(--line);border-radius:10px;padding:13px 14px;outline:none}
+.field{width:100%;background:#07111f;border:1px solid var(--line);border-radius:10px;padding:13px 14px;outline:none}
 .field:focus{border-color:var(--gold)}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 18px;border-radius:12px;font-weight:700;font-family:Rajdhani;font-size:19px;letter-spacing:.04em;text-transform:uppercase;transition:transform .08s,filter .15s}
 .btn:active{transform:translateY(1px)}
@@ -48,8 +48,8 @@ label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px;font-wei
 .stack>*+*{margin-top:14px}
 .note{color:var(--muted);font-size:13px;text-align:center;margin-top:14px;min-height:18px}
 .err{color:var(--red)}
-.how{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px}
-.how div{background:#0d1628;border:1px solid var(--line);border-radius:12px;padding:12px;font-size:13px;color:var(--muted)}
+.how{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}
+.how div{background:#081626;border:1px solid var(--line);border-radius:12px;padding:12px;font-size:13px;color:var(--muted)}
 .how b{display:block;color:var(--text);font-family:Rajdhani;font-size:17px;margin-bottom:2px}
 
 /* lobby */
@@ -57,22 +57,22 @@ label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px;font-wei
 .invite .field{font-size:13px;color:var(--gold2)}
 .code{font-family:Rajdhani;font-size:44px;font-weight:700;letter-spacing:.25em;color:var(--gold);text-align:center;margin:6px 0 16px}
 .players{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;margin:22px 0}
-.pcard{background:#0d1628;border:1px solid var(--line);border-radius:14px;padding:18px 12px;text-align:center}
-.pcard .av{width:56px;height:56px;border-radius:50%;margin:0 auto 10px;display:grid;place-items:center;font-family:Rajdhani;font-weight:700;font-size:24px;color:#08101d}
+.pcard{background:#081626;border:1px solid var(--line);border-radius:14px;padding:18px 12px;text-align:center}
+.pcard .av{width:56px;height:56px;border-radius:50%;margin:0 auto 10px;display:grid;place-items:center;font-family:Rajdhani;font-weight:700;font-size:24px;color:#04101b}
 .pcard .nm{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pcard .st{font-size:12px;color:var(--muted);margin-top:2px}
 .pcard.empty .av{background:transparent;border:2px dashed var(--line);color:var(--muted)}
 .vs{font-family:Rajdhani;font-weight:700;font-size:28px;color:var(--gold)}
 .opts{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:16px}
-.chip{padding:8px 14px;border-radius:999px;background:#0d1628;border:1px solid var(--line);font-size:14px;font-weight:600}
+.chip{padding:8px 14px;border-radius:999px;background:#081626;border:1px solid var(--line);font-size:14px;font-weight:600}
 .chip.on{border-color:var(--gold);color:var(--gold2)}
 .chip[disabled]{cursor:default}
 
-/* game */
+/* game hud */
 .hud{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center}
 .score{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px;min-width:0;position:relative}
 .score.r{flex-direction:row-reverse;text-align:right}
-.score .av{width:40px;height:40px;flex:none;border-radius:50%;display:grid;place-items:center;font-family:Rajdhani;font-weight:700;color:#08101d}
+.score .av{width:40px;height:40px;flex:none;border-radius:50%;display:grid;place-items:center;font-family:Rajdhani;font-weight:700;color:#04101b}
 .score .who{min-width:0}
 .score .nm{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .score .pts{font-family:Rajdhani;font-weight:700;font-size:28px;line-height:1}
@@ -82,23 +82,63 @@ label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px;font-wei
 .round{text-align:center;font-family:Rajdhani}
 .round .n{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em}
 .round .t{font-size:34px;font-weight:700;line-height:1}
-.timer{height:8px;background:#0d1628;border-radius:999px;overflow:hidden;margin:16px 0 18px;border:1px solid var(--line)}
-.timer i{display:block;height:100%;width:100%;background:linear-gradient(90deg,var(--teal),var(--gold));transform-origin:left;border-radius:999px}
-.qbox{background:linear-gradient(180deg,var(--card),var(--bg2));border:1px solid var(--line);border-radius:16px;padding:28px 22px;text-align:center;min-height:130px;display:flex;flex-direction:column;justify-content:center}
-.qbox .cat{font-size:12px;color:var(--gold);text-transform:uppercase;letter-spacing:.14em;font-weight:700;margin-bottom:8px}
+.timer{height:8px;background:#081626;border-radius:999px;overflow:hidden;margin:14px 0;border:1px solid var(--line)}
+.timer i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#3fe0d0,var(--gold));transform-origin:left;border-radius:999px}
+.qbox{background:linear-gradient(180deg,var(--card),var(--bg2));border:1px solid var(--line);border-radius:16px;padding:20px;text-align:center}
+.qbox .cat{font-size:12px;color:var(--gold);text-transform:uppercase;letter-spacing:.14em;font-weight:700;margin-bottom:6px}
 .qbox h2{font-family:Inter;font-weight:700;font-size:clamp(19px,3.6vw,25px);line-height:1.3}
-.answers{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
-.ans{position:relative;text-align:left;background:var(--card);border:2px solid var(--line);border-radius:14px;padding:16px 14px 16px 50px;font-weight:600;font-size:16px;min-height:64px;transition:border-color .15s,background .15s,transform .08s}
-.ans:hover:not(:disabled){border-color:#3d5788;background:var(--card2)}
-.ans .k{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:8px;display:grid;place-items:center;background:#0d1628;font-family:Rajdhani;font-weight:700;color:var(--muted)}
-.ans:disabled{cursor:default}
-.ans.picked{border-color:var(--gold)}
-.ans.correct{border-color:var(--green);background:#123a2a}
-.ans.wrong{border-color:var(--red);background:#3a1620}
-.ans .marks{position:absolute;right:10px;top:8px;display:flex;gap:4px}
-.ans .marks span{font-size:10px;font-weight:700;padding:2px 6px;border-radius:999px;color:#08101d}
-.ans.dim{opacity:.5}
-.toast{text-align:center;font-family:Rajdhani;font-weight:700;font-size:22px;margin-top:16px;min-height:30px}
+.qbox .hint{font-size:13px;color:var(--muted);margin-top:6px}
+.guess{display:flex;gap:8px;margin-top:12px}
+.guess .field{font-size:17px;font-weight:600}
+.guess .field:disabled{opacity:.7}
+
+/* sea */
+.sea{position:relative;height:330px;margin-top:12px;border-radius:16px;overflow:hidden;border:1px solid var(--line);
+  background:linear-gradient(180deg,#78dcef 0%,#2aa3c9 9%,#136a9c 25%,#0b4374 43%,#082a52 61%,#051836 78%,#020812 100%)}
+.sea .rays{position:absolute;inset:0;pointer-events:none;background:
+  linear-gradient(105deg,transparent 30%,rgba(255,255,255,.10) 33%,transparent 37%),
+  linear-gradient(80deg,transparent 52%,rgba(255,255,255,.08) 55%,transparent 59%),
+  linear-gradient(95deg,transparent 70%,rgba(255,255,255,.07) 72%,transparent 76%);
+  -webkit-mask-image:linear-gradient(180deg,#000 0%,transparent 45%);mask-image:linear-gradient(180deg,#000 0%,transparent 45%);animation:sway 7s ease-in-out infinite alternate}
+@keyframes sway{to{transform:translateX(30px)}}
+.sea .wave{position:absolute;top:-6px;left:0;width:200%;height:22px;animation:wave 6s linear infinite;opacity:.9}
+.sea .wave.b{top:-3px;animation-duration:9s;opacity:.5}
+@keyframes wave{to{transform:translateX(-50%)}}
+.zone{position:absolute;left:0;right:0;border-top:1px dashed rgba(255,255,255,.13)}
+.zone span{position:absolute;right:10px;top:4px;font-family:Rajdhani;font-weight:700;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.55);text-align:right;line-height:1.1}
+.zone span small{display:block;font-size:11px;letter-spacing:.04em;opacity:.8}
+.zone.hit span{color:#fff;text-shadow:0 0 10px currentColor}
+.floor{position:absolute;left:0;right:0;bottom:0;height:26px;background:
+  radial-gradient(30px 14px at 10% 100%,#0b1626 98%,transparent),radial-gradient(46px 18px at 32% 100%,#0a1422 98%,transparent),
+  radial-gradient(38px 16px at 58% 100%,#0b1626 98%,transparent),radial-gradient(60px 20px at 86% 100%,#0a1422 98%,transparent)}
+.glow{position:absolute;width:5px;height:5px;border-radius:50%;background:#9ff;box-shadow:0 0 10px 3px #5ff8;animation:blink 3s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:.15}50%{opacity:1}}
+.fish{position:absolute;width:22px;height:9px;border-radius:50%;background:rgba(10,30,50,.55);animation:swim linear infinite}
+.fish:after{content:"";position:absolute;right:-7px;top:1px;border-left:8px solid rgba(10,30,50,.55);border-top:4px solid transparent;border-bottom:4px solid transparent}
+@keyframes swim{from{transform:translateX(-60px)}to{transform:translateX(900px)}}
+.bub{position:absolute;border-radius:50%;border:1px solid rgba(255,255,255,.55);background:rgba(255,255,255,.08);pointer-events:none;animation:rise linear forwards}
+@keyframes rise{to{transform:translateY(-140px);opacity:0}}
+.diver{position:absolute;top:4%;transform:translate(-50%,0);transition:top 2.4s cubic-bezier(.5,0,.25,1);z-index:3;display:flex;flex-direction:column;align-items:center}
+.diver .body{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-family:Rajdhani;font-weight:700;font-size:20px;color:#04101b;
+  border:3px solid rgba(255,255,255,.85);box-shadow:0 0 0 4px rgba(255,255,255,.12),0 0 22px rgba(255,255,255,.25);animation:bob 2.2s ease-in-out infinite;position:relative}
+.diver .body:after{content:"";position:absolute;top:6px;left:9px;width:10px;height:6px;border-radius:50%;background:rgba(255,255,255,.6)}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.diver .tag{margin-top:5px;font-family:Rajdhani;font-weight:700;font-size:13px;background:rgba(0,0,0,.45);padding:2px 8px;border-radius:999px;white-space:nowrap}
+.diver.miss .body{animation:shake .5s 2}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.diver.deep .body{box-shadow:0 0 0 4px rgba(255,255,255,.15),0 0 30px 8px currentColor}
+
+.reveal{display:none;margin-top:12px}
+.reveal.on{display:block}
+.rrow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.rcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;min-width:0}
+.rcard .who{font-size:12px;color:var(--muted);font-weight:600}
+.rcard .ans{font-size:18px;font-weight:700;margin:2px 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rcard .tier{font-family:Rajdhani;font-weight:700;font-size:16px}
+.deeplist{margin-top:10px;font-size:13px;color:var(--muted)}
+.deeplist .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.deeplist .chips span{padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:#081626;color:var(--text);font-size:13px}
+.toast{text-align:center;font-family:Rajdhani;font-weight:700;font-size:20px;margin-top:10px;min-height:26px}
 .toast.good{color:var(--green)}.toast.bad{color:var(--red)}
 
 /* results */
@@ -108,21 +148,22 @@ label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px;font-wei
 .final{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:22px 0}
 .final .pcard .pts{font-family:Rajdhani;font-size:40px;font-weight:700}
 .final .pcard.win{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset}
-.recap{text-align:left;margin-top:8px;max-height:260px;overflow:auto;border-top:1px solid var(--line)}
-.recap div{display:flex;justify-content:space-between;gap:10px;padding:9px 2px;border-bottom:1px solid var(--line);font-size:13px}
-.recap div span:first-child{color:var(--muted)}
-.recap b{white-space:nowrap}
+.recap{text-align:left;margin-top:14px;max-height:300px;overflow:auto;border-top:1px solid var(--line)}
+.recap .it{padding:10px 2px;border-bottom:1px solid var(--line);font-size:13px}
+.recap .it .q{color:var(--muted);margin-bottom:4px}
+.recap .it .a{display:flex;justify-content:space-between;gap:10px}
 footer{color:var(--muted);font-size:11px;text-align:center;padding:18px 0 4px}
 
 @media (max-width:560px){
   .how{grid-template-columns:1fr}
-  .answers{grid-template-columns:1fr}
-  .ans{min-height:54px}
   .score .av{display:none}
   .score .pts{font-size:24px}
   .panel{padding:18px}
-  .players{grid-template-columns:1fr;}
+  .players{grid-template-columns:1fr}
   .vs{text-align:center}
+  .sea{height:280px}
+  .zone span small{display:none}
+  .rrow{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -136,8 +177,8 @@ footer{color:var(--muted);font-size:11px;text-align:center;padding:18px 0 4px}
   <!-- HOME -->
   <section class="screen on" id="s-home">
     <div class="hero">
-      <h1>1v1 <em>League</em> Trivia</h1>
-      <p>Create a room, send the link to a friend, and race to answer first.</p>
+      <h1>Dive <em>deeper</em> than your friend</h1>
+      <p>1v1 League trivia where the most obscure right answer wins.</p>
     </div>
     <div class="panel stack">
       <div>
@@ -153,9 +194,9 @@ footer{color:var(--muted);font-size:11px;text-align:center;padding:18px 0 4px}
       <div class="note" id="homeNote"></div>
     </div>
     <div class="how">
-      <div><b>1. Invite</b>Create a room and share the link.</div>
-      <div><b>2. Race</b>Same question for both. Faster correct answers score more.</div>
-      <div><b>3. Win</b>Highest score after all rounds takes it.</div>
+      <div><b>1. Name something</b>"Name an item with attack speed." Type any correct answer.</div>
+      <div><b>2. Go obscure</b>Obvious answers stay near the surface. Rare ones dive to the trench.</div>
+      <div><b>3. Score deep</b>Surface 100 · Twilight 300 · Midnight 500 · Abyss 750 · Trench 1000.</div>
     </div>
   </section>
 
@@ -178,8 +219,8 @@ footer{color:var(--muted);font-size:11px;text-align:center;padding:18px 0 4px}
       </div>
       <div class="opts" id="roundOpts">
         <button class="chip" data-r="5">5 rounds</button>
-        <button class="chip on" data-r="10">10 rounds</button>
-        <button class="chip" data-r="15">15 rounds</button>
+        <button class="chip on" data-r="8">8 rounds</button>
+        <button class="chip" data-r="12">12 rounds</button>
       </div>
       <button class="btn btn-gold" id="startBtn" style="width:100%" disabled>Waiting for opponent…</button>
       <div class="note" id="lobbyNote"></div>
@@ -189,13 +230,37 @@ footer{color:var(--muted);font-size:11px;text-align:center;padding:18px 0 4px}
   <!-- GAME -->
   <section class="screen" id="s-game">
     <div class="hud">
-      <div class="score" id="hudMe"><div class="tick">ANSWERED</div><div class="av"></div><div class="who"><div class="nm"></div><div class="pts">0</div></div></div>
-      <div class="round"><div class="n" id="roundN">Round 1/10</div><div class="t" id="timeLeft">15</div></div>
-      <div class="score r" id="hudOpp"><div class="tick">ANSWERED</div><div class="av"></div><div class="who"><div class="nm"></div><div class="pts">0</div></div></div>
+      <div class="score" id="hudMe"><div class="tick">LOCKED IN</div><div class="av"></div><div class="who"><div class="nm"></div><div class="pts">0</div></div></div>
+      <div class="round"><div class="n" id="roundN">Round 1/8</div><div class="t" id="timeLeft">25</div></div>
+      <div class="score r" id="hudOpp"><div class="tick">LOCKED IN</div><div class="av"></div><div class="who"><div class="nm"></div><div class="pts">0</div></div></div>
     </div>
     <div class="timer"><i id="timerBar"></i></div>
-    <div class="qbox"><div class="cat" id="qCat"></div><h2 id="qText"></h2></div>
-    <div class="answers" id="answers"></div>
+    <div class="qbox">
+      <div class="cat" id="qCat"></div>
+      <h2 id="qText"></h2>
+      <div class="hint">One answer. The rarer it is, the deeper you dive.</div>
+      <form class="guess" id="guessForm" autocomplete="off">
+        <input class="field" id="guessIn" maxlength="40" placeholder="Type your answer…" autocomplete="off" spellcheck="false">
+        <button class="btn btn-gold" id="guessBtn" type="submit">Dive</button>
+      </form>
+    </div>
+    <div class="sea" id="sea">
+      <svg class="wave" viewBox="0 0 1600 22" preserveAspectRatio="none"><path d="M0 12 Q 50 2 100 12 T 200 12 T 300 12 T 400 12 T 500 12 T 600 12 T 700 12 T 800 12 T 900 12 T 1000 12 T 1100 12 T 1200 12 T 1300 12 T 1400 12 T 1500 12 T 1600 12 V0 H0Z" fill="#bff3fb"/></svg>
+      <svg class="wave b" viewBox="0 0 1600 22" preserveAspectRatio="none"><path d="M0 10 Q 80 20 160 10 T 320 10 T 480 10 T 640 10 T 800 10 T 960 10 T 1120 10 T 1280 10 T 1440 10 T 1600 10 V0 H0Z" fill="#e8fbff"/></svg>
+      <div class="rays"></div>
+      <div id="zones"></div>
+      <div id="decor"></div>
+      <div class="floor"></div>
+      <div class="diver" id="dvMe" style="left:30%"><div class="body"></div><div class="tag">0 m</div></div>
+      <div class="diver" id="dvOpp" style="left:52%"><div class="body"></div><div class="tag">0 m</div></div>
+    </div>
+    <div class="reveal" id="reveal">
+      <div class="rrow">
+        <div class="rcard" id="rcMe"></div>
+        <div class="rcard" id="rcOpp"></div>
+      </div>
+      <div class="deeplist" id="deepList"></div>
+    </div>
     <div class="toast" id="toast"></div>
   </section>
 
@@ -215,89 +280,216 @@ footer{color:var(--muted);font-size:11px;text-align:center;padding:18px 0 4px}
     </div>
   </section>
 
-  <footer>Version 2 · Fan-made trivia game. Not affiliated with or endorsed by Riot Games.</footer>
+  <footer>Version 3 · Fan-made trivia game. Not affiliated with or endorsed by Riot Games.</footer>
 </div>
 
 <script>
-// ---------- Questions: [category, question, correct, wrong, wrong, wrong]
-const Q = [
-["Lore","Which champion is known as the Nine-Tailed Fox?","Ahri","Kitsune","Neeko","Evelynn"],
-["Lore","Who is Jinx's older sister?","Vi","Caitlyn","Sevika","Mel"],
-["Lore","Which region is Garen from?","Demacia","Noxus","Ionia","Freljord"],
-["Lore","Lux is the sister of which champion?","Garen","Jarvan IV","Galio","Xin Zhao"],
-["Lore","What is the name of Teemo's homeland?","Bandle City","Piltover","Zaun","Targon"],
-["Lore","Which city-state is Ezreal from?","Piltover","Zaun","Bilgewater","Shurima"],
-["Lore","Draven's brother is…","Darius","Swain","Talon","Sion"],
-["Lore","Yasuo's brother is…","Yone","Zed","Shen","Master Yi"],
-["Lore","What is the name of Annie's teddy bear?","Tibbers","Willump","Bristle","Skaarl"],
-["Lore","What is the name of Kled's lizard mount?","Skaarl","Bristle","Willump","Tibbers"],
-["Lore","Sejuani rides a war boar named…","Bristle","Skaarl","Grunt","Rammus"],
-["Lore","Which bounty hunter is Gangplank's nemesis?","Miss Fortune","Illaoi","Graves","Nautilus"],
-["Lore","The two beings that make up Kindred are Lamb and…","Wolf","Fox","Raven","Bear"],
-["Lore","What catastrophic event created the Shadow Isles' Black Mist?","The Ruination","The Rune Wars","The Void Rising","The Darkin War"],
-["Lore","Which champion is the Sad Mummy?","Amumu","Nasus","Renekton","Xerath"],
-["Lore","Which champion is the Blind Monk?","Lee Sin","Master Yi","Udyr","Shen"],
-["Lore","Which champion is the Darkin Blade?","Aatrox","Varus","Kayn","Naafiri"],
-["Lore","Which champion is the Rune Mage?","Ryze","Kassadin","Karma","Zilean"],
-["Lore","Who is the Unforgiven?","Yasuo","Yone","Riven","Talon"],
-["Lore","Which Ascended emperor of Shurima commands sand soldiers?","Azir","Nasus","Renekton","Xerath"],
-["Lore","Which Void champion is a giant floating eye?","Vel'Koz","Cho'Gath","Kog'Maw","Kassadin"],
-["Lore","Which champion is a magical cat?","Yuumi","Neeko","Rengar","Gnar"],
-["Lore","Which Freljord champion is the Frost Archer?","Ashe","Sejuani","Lissandra","Anivia"],
-["Lore","Which champion is a boy riding a yeti?","Nunu & Willump","Gnar","Ivern","Kled"],
-["Lore","Which champion switches between human and cougar form?","Nidalee","Rengar","Elise","Gnar"],
-["Champions","Which champion throws a lantern to save allies?","Thresh","Senna","Karma","Lulu"],
-["Champions","What is the name of Blitzcrank's Q?","Rocket Grab","Power Fist","Static Field","Overdrive"],
-["Champions","Which champion's ultimate is called Death Lotus?","Katarina","Akali","Irelia","Kayle"],
-["Champions","Which champion's ultimate is called Final Spark?","Lux","Xerath","Viktor","Vel'Koz"],
-["Champions","What is the name of Malphite's ultimate?","Unstoppable Force","Ground Slam","Seismic Shard","Rockslide"],
-["Champions","Which champion's ultimate, Requiem, hits every enemy champion on the map?","Karthus","Soraka","Ashe","Pantheon"],
-["Champions","Kog'Maw's title is…","The Mouth of the Abyss","The Eye of the Void","The Voidreaver","The Terror of the Void"],
-["Champions","Which champion is a scarecrow that spreads fear?","Fiddlesticks","Nocturne","Hecarim","Shaco"],
-["Champions","Which champion is a jungle ram-turtle-armadillo that rolls around?","Rammus","Malphite","Skarner","Zac"],
-["Champions","Which champion carries a giant gun named 'Fishbones'?","Jinx","Caitlyn","Graves","Tristana"],
-["Champions","Which champion is a living blob of green goo?","Zac","Gragas","Maokai","Ivern"],
-["Gameplay","How many players are on each team on Summoner's Rift?","5","4","6","3"],
-["Gameplay","What is the maximum champion level in a normal game?","18","16","20","25"],
-["Gameplay","Which summoner spell instantly blinks you a short distance?","Flash","Ghost","Teleport","Cleanse"],
-["Gameplay","Which summoner spell is almost always taken by junglers?","Smite","Ignite","Exhaust","Barrier"],
-["Gameplay","How many inhibitors does each team have?","3","2","4","5"],
-["Gameplay","How many towers (turrets) does each team start with on Summoner's Rift?","11","9","10","12"],
-["Gameplay","Which epic monster can be released to charge into a tower?","Rift Herald","Baron Nashor","Elder Dragon","Scuttle Crab"],
-["Gameplay","Which epic monster's buff lets you execute low-health enemies?","Elder Dragon","Baron Nashor","Mountain Drake","Rift Herald"],
-["Gameplay","Which neutral monster grants the red buff?","Red Brambleback","Blue Sentinel","Gromp","Crimson Raptor"],
-["Gameplay","Which neutral monster grants the blue buff?","Blue Sentinel","Gromp","Ancient Krug","Murk Wolf"],
-["Gameplay","Which item's active puts you in stasis for 2.5 seconds?","Zhonya's Hourglass","Guardian Angel","Banshee's Veil","Quicksilver Sash"],
-["Gameplay","Which Dragon Soul gives you a shield after not taking damage?","Mountain","Ocean","Infernal","Cloud"],
-["Gameplay","Which Dragon Soul is all about healing over time?","Ocean","Mountain","Hextech","Chemtech"],
-["Gameplay","Which lane do the ADC and support usually play?","Bottom","Top","Mid","Jungle"],
-["Gameplay","In ARAM, which map do you play on?","Howling Abyss","Twisted Treeline","Crystal Scar","Summoner's Rift"],
-["Gameplay","What do you destroy to win a game of League?","The Nexus","The Inhibitor","Baron Nashor","The Fountain"],
-["Gameplay","What does ARAM stand for?","All Random All Mid","All Ranked All Mid","Any Role Any Map","All Random Any Mode"],
-["Gameplay","Which currency (blue) is earned by playing and used to unlock champions?","Blue Essence","Riot Points","Orange Essence","Mythic Essence"],
-["Esports","Which team won the very first World Championship in 2011?","Fnatic","SK Telecom T1","Taipei Assassins","Moscow Five"],
-["Esports","Faker has spent his whole career on which team?","T1","Gen.G","DRX","Samsung Galaxy"],
-["Esports","Which team won Worlds 2023?","T1","Weibo Gaming","JD Gaming","Gen.G"],
-["Esports","Which team won Worlds 2024?","T1","Bilibili Gaming","Gen.G","Hanwha Life Esports"],
-["Esports","What does MSI stand for?","Mid-Season Invitational","Major Summer Invitational","Mid-Split International","Masters Series International"],
-["Esports","Which team won Worlds 2022 in a huge underdog run?","DRX","T1","JD Gaming","Gen.G"],
-["Esports","Which team won Worlds 2018?","Invictus Gaming","Fnatic","G2 Esports","Cloud9"],
-["General","In what year was League of Legends released?","2009","2007","2011","2012"],
-["General","Which studio animated the Arcane series?","Fortiche","Studio Ghibli","Sony Pictures Animation","Pixar"],
-["General","Arcane is mostly set in which two cities?","Piltover and Zaun","Demacia and Noxus","Ionia and Noxus","Bilgewater and Shurima"],
-["General","Which virtual K-pop girl group features Ahri, Akali, Evelynn and Kai'Sa?","K/DA","Pentakill","True Damage","HEARTSTEEL"],
-["General","Which virtual metal band features Karthus, Mordekaiser and Yorick?","Pentakill","K/DA","True Damage","HEARTSTEEL"],
-["General","Killing all five enemy champions in quick succession is called a…","Pentakill","Ace","Quadra","Rampage"],
+// ---------- Depth tiers
+const TIERS=[
+  {name:"Not on the list",pts:0,depth:0,y:4,col:"#ff5d6c"},
+  {name:"Surface",pts:100,depth:50,y:12,col:"#9ff0fa"},
+  {name:"Twilight",pts:300,depth:200,y:30,col:"#5fc4f0"},
+  {name:"Midnight",pts:500,depth:1000,y:48,col:"#8b9bff"},
+  {name:"Abyss",pts:750,depth:4000,y:66,col:"#c98bff"},
+  {name:"Trench",pts:1000,depth:10900,y:84,col:"#ff7ad9"},
+];
+// zone boundaries (% from top) for tiers 1..5
+const ZONES=[[1,0],[2,21],[3,39],[4,57],[5,75]];
+
+// ---------- Questions: [category, prompt, tier1 (obvious) ... tier5 (very obscure)], answers separated by |
+const P=[
+["Items","Name an item that gives attack speed",
+ "Kraken Slayer|Blade of the Ruined King|Guinsoo's Rageblade",
+ "Berserker's Greaves|Runaan's Hurricane|Statikk Shiv|Phantom Dancer|Rapid Firecannon|Nashor's Tooth|Wit's End",
+ "Terminus|Navori Flickerblade|Trinity Force|Yun Tal Wildarrows",
+ "Zeal|Recurve Bow|Dagger|Rageknife|Noonquiver|Hearthbound Axe",
+ "Experimental Hexplate|Stridebreaker|Gunmetal Greaves"],
+["Items","Name a pair of boots",
+ "Berserker's Greaves|Plated Steelcaps|Mercury's Treads|Sorcerer's Shoes",
+ "Ionian Boots of Lucidity|Boots of Swiftness|Boots",
+ "Symbiotic Soles",
+ "Slightly Magical Footwear|Gunmetal Greaves|Spellslinger's Shoes|Chainlaced Crushers|Armored Advance",
+ "Crimson Lucidity|Swiftmarch|Forever Forward|Boots of Mobility|Ninja Tabi"],
+["Regions","Name a champion from Ionia",
+ "Yasuo|Ahri|Zed",
+ "Yone|Irelia|Lee Sin|Master Yi|Akali|Shen",
+ "Karma|Syndra|Jhin|Xayah|Rakan|Kayn|Sett|Wukong|Kennen",
+ "Varus|Lillia|Ivern",
+ "Hwei|Yunara"],
+["Regions","Name a champion from Demacia",
+ "Garen|Lux",
+ "Jarvan IV|Xin Zhao|Fiora|Vayne|Galio|Sylas",
+ "Quinn|Poppy|Shyvana|Lucian|Kayle",
+ "Morgana",
+ "Sona"],
+["Regions","Name a champion from Noxus",
+ "Darius|Draven|Katarina",
+ "Swain|LeBlanc|Talon|Riven|Samira",
+ "Sion|Cassiopeia|Vladimir|Mordekaiser|Kled|Mel",
+ "Rell|Briar",
+ "Ambessa"],
+["Regions","Name a champion from the Freljord",
+ "Ashe|Braum",
+ "Sejuani|Lissandra|Tryndamere|Olaf|Volibear|Anivia",
+ "Gragas|Nunu & Willump|Trundle|Udyr|Ornn|Gnar",
+ "Aurora",
+ ""],
+["Regions","Name a champion from Shurima",
+ "Azir|Nasus|Renekton",
+ "Sivir|Xerath|Amumu|Rammus",
+ "Taliyah|K'Sante|Akshan",
+ "Naafiri",
+ ""],
+["Regions","Name a champion from Piltover or Zaun",
+ "Jinx|Vi|Caitlyn",
+ "Ekko|Jayce|Viktor|Ezreal|Heimerdinger|Warwick",
+ "Camille|Orianna|Blitzcrank|Singed|Twitch|Dr. Mundo|Seraphine|Ziggs",
+ "Urgot|Janna|Zac|Zeri",
+ "Renata Glasc"],
+["Regions","Name a champion from the Shadow Isles",
+ "Thresh|Viego",
+ "Hecarim|Karthus|Yorick|Kalista",
+ "Gwen|Maokai|Senna",
+ "Vex",
+ "Mordekaiser"],
+["Regions","Name a champion from Bilgewater",
+ "Gangplank|Miss Fortune",
+ "Graves|Twisted Fate|Pyke",
+ "Nautilus|Illaoi|Fizz|Tahm Kench",
+ "Nilah",
+ ""],
+["Champions","Name a yordle champion",
+ "Teemo|Veigar|Tristana",
+ "Lulu|Heimerdinger|Poppy|Ziggs",
+ "Gnar|Rumble|Kennen|Corki|Kled",
+ "Vex|Yuumi",
+ ""],
+["Champions","Name a Void champion",
+ "Kha'Zix|Cho'Gath",
+ "Kog'Maw|Kai'Sa|Vel'Koz|Rek'Sai|Malzahar",
+ "Kassadin|Bel'Veth",
+ "",
+ ""],
+["Champions","Name a champion with a global (or near-global) ultimate",
+ "Karthus|Soraka|Shen|Twisted Fate",
+ "Pantheon|Gangplank|Jinx|Ashe|Ezreal",
+ "Draven|Senna|Nocturne|Ryze",
+ "Galio|Taliyah",
+ ""],
+["Champions","Name a champion with a hook or pull",
+ "Blitzcrank|Thresh|Pyke|Nautilus",
+ "Darius|Sett|Urgot",
+ "Orianna|Diana|Swain|Kled|Skarner",
+ "Aatrox|Mordekaiser|Rell",
+ ""],
+["Champions","Name a champion that transforms or changes form",
+ "Nidalee|Jayce|Gnar|Elise",
+ "Shyvana|Kayn|Udyr|Neeko",
+ "Nasus|Swain|Aatrox|Kled",
+ "Sion|Karthus|Renekton",
+ ""],
+["Champions","Name a marksman (ADC) champion",
+ "Jinx|Caitlyn|Ezreal|Vayne|Kai'Sa|Ashe|Jhin|Miss Fortune",
+ "Lucian|Draven|Samira|Xayah|Tristana|Sivir|Twitch|Kog'Maw|Varus|Aphelios|Zeri",
+ "Kalista|Corki|Senna|Nilah|Smolder|Graves|Quinn|Kindred",
+ "Akshan|Kayle|Teemo|Mel",
+ "Yunara|Azir"],
+["Champions","Name a support champion",
+ "Thresh|Lulu|Leona|Nami|Janna|Soraka|Blitzcrank",
+ "Morgana|Karma|Braum|Nautilus|Yuumi|Pyke|Sona|Lux|Alistar",
+ "Rakan|Bard|Senna|Taric|Rell|Seraphine|Zyra|Renata Glasc|Milio",
+ "Zilean|Tahm Kench|Maokai|Brand|Xerath|Vel'Koz|Swain|Poppy",
+ "Galio|Shaco|Neeko|Camille"],
+["Champions","Name an assassin champion",
+ "Zed|Talon|Katarina|Akali|Kha'Zix",
+ "Rengar|Qiyana|Evelynn|Pyke|Fizz|LeBlanc|Kayn|Shaco|Ekko",
+ "Nocturne|Diana|Kassadin|Naafiri|Briar",
+ "Nidalee|Viego|Yone|Yasuo",
+ "Elise|Pantheon"],
+["Game","Name a summoner spell",
+ "Flash|Ignite|Teleport",
+ "Smite|Heal|Exhaust|Barrier",
+ "Ghost|Cleanse",
+ "Mark|Clarity",
+ "Clairvoyance|Revive|Garrison|Promote|Surge|Fortify"],
+["Game","Name a neutral monster on Summoner's Rift",
+ "Baron Nashor|Dragon|Rift Herald",
+ "Gromp|Krugs|Raptors|Blue Sentinel|Red Brambleback|Murk Wolves",
+ "Rift Scuttler|Voidgrubs|Elder Dragon",
+ "Atakhan|Ancient Krug|Crimson Raptor|Greater Murk Wolf",
+ ""],
+["Game","Name a type of dragon (drake)",
+ "Infernal|Ocean",
+ "Mountain|Cloud|Elder",
+ "Hextech|Chemtech",
+ "",
+ ""],
 ];
 
-const DUR = 15000, REVEAL = 3200;
-const $ = s => document.querySelector(s);
-const COLORS = ["#2ec4c4","#ff8a4c"];
+// nicknames -> canonical answer (keys are normalized)
+const ALIAS={mf:"Miss Fortune",tf:"Twisted Fate",gp:"Gangplank",j4:"Jarvan IV",jarvan:"Jarvan IV",jarvan4:"Jarvan IV",xin:"Xin Zhao",yi:"Master Yi",
+ masteryi:"Master Yi",lee:"Lee Sin",mundo:"Dr. Mundo",drmundo:"Dr. Mundo",nunu:"Nunu & Willump",nunuwillump:"Nunu & Willump",kog:"Kog'Maw",cho:"Cho'Gath",
+ kha:"Kha'Zix",rek:"Rek'Sai",voli:"Volibear",tryn:"Tryndamere",trynd:"Tryndamere",heimer:"Heimerdinger",donger:"Heimerdinger",cait:"Caitlyn",ez:"Ezreal",
+ trist:"Tristana",sej:"Sejuani",liss:"Lissandra",fiddle:"Fiddlesticks",naut:"Nautilus",blitz:"Blitzcrank",malz:"Malzahar",morde:"Mordekaiser",
+ kass:"Kassadin",tahm:"Tahm Kench",renata:"Renata Glasc",ww:"Warwick",vlad:"Vladimir",kata:"Katarina",lb:"LeBlanc",cass:"Cassiopeia",ori:"Orianna",
+ hec:"Hecarim",kaisa:"Kai'Sa",monkeyking:"Wukong",bork:"Blade of the Ruined King",botrk:"Blade of the Ruined King",bork2:"Blade of the Ruined King",
+ rageblade:"Guinsoo's Rageblade",guinsoo:"Guinsoo's Rageblade",guinsoos:"Guinsoo's Rageblade",pd:"Phantom Dancer",rfc:"Rapid Firecannon",
+ firecannon:"Rapid Firecannon",shiv:"Statikk Shiv",statik:"Statikk Shiv",runaans:"Runaan's Hurricane",runaan:"Runaan's Hurricane",hurricane:"Runaan's Hurricane",
+ nashors:"Nashor's Tooth",nashor:"Baron Nashor",kraken:"Kraken Slayer",navori:"Navori Flickerblade",triforce:"Trinity Force",tri:"Trinity Force",
+ hexplate:"Experimental Hexplate",yuntal:"Yun Tal Wildarrows",witsend:"Wit's End",wits:"Wit's End",berserkers:"Berserker's Greaves",zerks:"Berserker's Greaves",
+ berserker:"Berserker's Greaves",steelcaps:"Plated Steelcaps",tabi:"Plated Steelcaps",tabis:"Plated Steelcaps",mercs:"Mercury's Treads",
+ mercury:"Mercury's Treads",mercurys:"Mercury's Treads",treads:"Mercury's Treads",sorcs:"Sorcerer's Shoes",sorcerers:"Sorcerer's Shoes",
+ sorcerer:"Sorcerer's Shoes",sorcs2:"Sorcerer's Shoes",lucidity:"Ionian Boots of Lucidity",ionian:"Ionian Boots of Lucidity",ionians:"Ionian Boots of Lucidity",
+ cdrboots:"Ionian Boots of Lucidity",swifties:"Boots of Swiftness",swiftness:"Boots of Swiftness",symbiotic:"Symbiotic Soles",mobis:"Boots of Mobility",
+ mobility:"Boots of Mobility",ninjatabi:"Ninja Tabi",magicalfootwear:"Slightly Magical Footwear",baron:"Baron Nashor",herald:"Rift Herald",
+ riftherald:"Rift Herald",scuttle:"Rift Scuttler",scuttlecrab:"Rift Scuttler",crab:"Rift Scuttler",redbuff:"Red Brambleback",red:"Red Brambleback",
+ bluebuff:"Blue Sentinel",blue:"Blue Sentinel",krug:"Krugs",raptor:"Raptors",wolves:"Murk Wolves",wolf:"Murk Wolves",grubs:"Voidgrubs",
+ voidgrub:"Voidgrubs",drake:"Dragon",elderdrake:"Elder Dragon",elder:"Elder Dragon",fire:"Infernal",infernaldrake:"Infernal",water:"Ocean",
+ air:"Cloud",wind:"Cloud",earth:"Mountain",tp:"Teleport",exh:"Exhaust",snowball:"Mark",dash:"Mark",ksante:"K'Sante",velkoz:"Vel'Koz",belveth:"Bel'Veth",
+ asol:"Aurelion Sol",ivern:"Ivern",smolder:"Smolder",sol:"Aurelion Sol"};
+
+const norm=s=>String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/&/g,'and').replace(/[^a-z0-9]/g,'');
+const QS=P.map(([cat,q,...tiers])=>{
+  const answers=[];
+  tiers.forEach((t,k)=>t.split('|').filter(Boolean).forEach(name=>answers.push({name,tier:k+1,n:norm(name),words:name.split(/[\s.']+/).map(norm).filter(w=>w.length>=4)})));
+  return {cat,q,answers};
+});
+function lev(a,b){
+  if(Math.abs(a.length-b.length)>2) return 9;
+  const d=Array.from({length:a.length+1},(_,i)=>[i]);
+  for(let j=1;j<=b.length;j++) d[0][j]=j;
+  for(let i=1;i<=a.length;i++) for(let j=1;j<=b.length;j++)
+  {
+    d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));
+    if(i>1&&j>1&&a[i-1]===b[j-2]&&a[i-2]===b[j-1]) d[i][j]=Math.min(d[i][j],d[i-2][j-2]+1); // swapped letters
+  }
+  return d[a.length][b.length];
+}
+function judge(q,text){
+  const n=norm(text||''); if(!n) return null;
+  const A=q.answers, byName=nm=>A.find(a=>a.name===nm);
+  let f=A.find(a=>a.n===n); if(f) return f;
+  if(ALIAS[n]&&(f=byName(ALIAS[n]))) return f;
+  if(n.length>3&&n.endsWith('s')){f=A.find(a=>a.n===n.slice(0,-1)); if(f) return f}
+  f=A.find(a=>a.n===n+'s'); if(f) return f;
+  if(n.length>=4){const c=A.filter(a=>a.n.startsWith(n)||a.words.includes(n)); if(c.length===1) return c[0]}
+  const lim=n.length>=8?2:n.length>=4?1:0;
+  if(lim){
+    let best=null,bd=99,tie=false;
+    for(const a of A){const d=lev(n,a.n); if(d<bd){bd=d;best=a;tie=false}else if(d===bd&&a!==best) tie=true}
+    if(best&&bd<=lim&&!tie) return best;
+    for(const k in ALIAS) if(k.length>=5&&lev(n,k)<=1&&(f=byName(ALIAS[k]))) return f;
+  }
+  return null;
+}
+
+const DUR=25000, REVEAL=7500;
+const $=s=>document.querySelector(s);
+const COLORS=["#3fe0d0","#ff9a5c"];
 
 // ---------- state
 let isHost=false, me={name:""}, opp={name:""};
-let rounds=10, game=null; // host: {qs, i, picks:{h,g}, scores:{h,g}, timer}
-let cur=null; // client view of current question
+let rounds=8, game=null, cur=null;
 let myScore=0, oppScore=0, history=[];
 
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id))}
@@ -313,12 +505,10 @@ const inviteRoom=(params.get('room')||"").toUpperCase();
 if(inviteRoom){
   $('#joinCode').value=inviteRoom;
   $('#createBtn').style.display='none';
-  document.querySelector('.or').textContent='';
   document.querySelector('.or').style.display='none';
   $('#joinBtn').textContent='Join duel';
   $('#homeNote').textContent='You were invited! Enter your name and hit Join.';
 }
-
 function getName(){
   const n=$('#name').value.trim();
   if(!n){$('#homeNote').innerHTML='<span class="err">Enter a name first.</span>';$('#name').focus();return null}
@@ -330,7 +520,7 @@ function getName(){
 // so it works across home routers that block direct peer-to-peer links. We connect to several
 // brokers at once, publish to all of them, and drop duplicates.
 const BROKERS=["wss://broker.emqx.io:8084/mqtt","wss://broker.hivemq.com:8884/mqtt","wss://test.mosquitto.org:8081/mqtt"];
-const TOPIC="riftduel/v2/";
+const TOPIC="riftduel/v3/";
 const myId=Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4);
 let clients=[], seen=new Set(), seq=0, room="", oppId=null, lastSeen=0, hbTimer=null, helloTimer=null, joinedAt=0;
 
@@ -418,7 +608,7 @@ function joinRoom(){
     const hi=()=>{
       if(oppId){clearInterval(helloTimer);return}
       rawSend({t:'hello',name:me.name});
-      if(Date.now()-joinedAt>15000) $('#homeNote').innerHTML='<span class="err">Host not found yet. Your friend must keep their tab open and be on Version 2 (shown at the bottom of the page). If not, they should press Ctrl+F5 and create a new room.</span>';
+      if(Date.now()-joinedAt>15000) $('#homeNote').innerHTML='<span class="err">Host not found yet. Your friend must keep their tab open and be on Version 3 (shown at the bottom of the page). If not, they should press Ctrl+F5 and create a new room.</span>';
       if(Date.now()-joinedAt>60000){clearInterval(helloTimer);$('#joinBtn').disabled=false;$('#homeNote').innerHTML='<span class="err">Room not found. Ask your friend for a fresh invite link.</span>'}
     };
     hi(); helloTimer=setInterval(hi,1500); startHeartbeat();
@@ -465,8 +655,8 @@ function renderLobby(){
   pc($('#lobbyOpp'),opp.name,COLORS[1],isHost?'Challenger':'Host');
   document.querySelectorAll('#roundOpts .chip').forEach(c=>{c.classList.toggle('on',+c.dataset.r===rounds);c.disabled=!isHost});
   const sb=$('#startBtn');
-  if(isHost){sb.style.display='';sb.disabled=!opp.name;sb.textContent=opp.name?'Start duel':'Waiting for opponent…'}
-  else{sb.style.display='';sb.disabled=true;sb.textContent='Waiting for host to start…'}
+  if(isHost){sb.disabled=!opp.name;sb.textContent=opp.name?'Start duel':'Waiting for opponent…'}
+  else{sb.disabled=true;sb.textContent='Waiting for host to start…'}
 }
 $('#roundOpts').addEventListener('click',e=>{
   const c=e.target.closest('.chip'); if(!c||!isHost) return;
@@ -481,50 +671,91 @@ $('#createBtn').onclick=createRoom;
 $('#joinBtn').onclick=joinRoom;
 $('#joinCode').addEventListener('keydown',e=>{if(e.key==='Enter')joinRoom()});
 $('#startBtn').onclick=()=>{if(isHost&&oppId) hostStart()};
-$('#againBtn').onclick=()=>{
-  if(isHost){if(opp.name) hostStart()}
-};
+$('#againBtn').onclick=()=>{if(isHost&&oppId) hostStart()};
 $('#homeBtn').onclick=()=>{location.href=location.pathname};
 
 // ---------- host game loop
 function hostStart(){
-  const qs=shuffle(Q).slice(0,rounds).map(q=>{
-    const opts=shuffle(q.slice(2));
-    return {cat:q[0],q:q[1],opts,ans:opts.indexOf(q[2])};
-  });
-  game={qs,i:-1,scores:{h:0,g:0},picks:{},timer:null,log:[]};
-  send({t:'begin',n:rounds}); beginClient(rounds);
+  const order=shuffle(QS.map((_,i)=>i)).slice(0,Math.min(rounds,QS.length));
+  game={order,i:-1,scores:{h:0,g:0},picks:{},timer:null};
+  send({t:'begin',n:order.length}); beginClient(order.length);
   setTimeout(hostNext,900);
 }
 function hostNext(){
+  if(!game) return;
   game.i++;
-  if(game.i>=game.qs.length){
-    const m={t:'end',scores:game.scores};
-    send(m); endGame(m); return;
-  }
-  const q=game.qs[game.i]; game.picks={};
-  const m={t:'q',i:game.i,n:game.qs.length,cat:q.cat,q:q.q,opts:q.opts,dur:DUR};
+  if(game.i>=game.order.length){const m={t:'end',scores:game.scores};send(m);endGame(m);return}
+  game.picks={};
+  const m={t:'q',i:game.i,n:game.order.length,qi:game.order[game.i],dur:DUR};
   send(m); showQuestion(m);
-  game.timer=setTimeout(hostResolve,DUR+700);
+  game.timer=setTimeout(hostResolve,DUR+1500);
 }
 function hostAnswer(who,m){
   if(!game||m.i!==game.i||game.picks[who]) return;
-  game.picks[who]={c:m.c,ms:Math.min(m.ms,DUR)};
+  game.picks[who]={text:String(m.text||'').slice(0,40)};
   if(who==='g') markOpp(); else send({t:'oa'});
-  if(game.picks.h&&game.picks.g){clearTimeout(game.timer);setTimeout(hostResolve,500)}
+  if(game.picks.h&&game.picks.g){clearTimeout(game.timer);setTimeout(hostResolve,400)}
 }
-function pts(p,ans){if(!p||p.c!==ans) return 0;return Math.round(500+500*(1-p.ms/DUR))}
 function hostResolve(){
   if(!game||game.resolved===game.i) return;
   game.resolved=game.i;
-  const q=game.qs[game.i];
-  const ph=pts(game.picks.h,q.ans), pg=pts(game.picks.g,q.ans);
-  game.scores.h+=ph; game.scores.g+=pg;
-  const base={t:'r',i:game.i,ans:q.ans};
-  const hostView={...base,myPick:game.picks.h?game.picks.h.c:-1,oppPick:game.picks.g?game.picks.g.c:-1,myPts:ph,oppPts:pg,my:game.scores.h,op:game.scores.g};
-  const guestView={...base,myPick:hostView.oppPick,oppPick:hostView.myPick,myPts:pg,oppPts:ph,my:game.scores.g,op:game.scores.h};
-  send(guestView); reveal(hostView);
+  const q=QS[game.order[game.i]];
+  const res=p=>{const j=p?judge(q,p.text):null;return {text:p?p.text:'',name:j?j.name:null,tier:j?j.tier:0,pts:j?TIERS[j.tier].pts:0}};
+  const h=res(game.picks.h), g=res(game.picks.g);
+  game.scores.h+=h.pts; game.scores.g+=g.pts;
+  send({t:'r',i:game.i,mine:g,opp:h,my:game.scores.g,op:game.scores.h});
+  reveal({t:'r',i:game.i,mine:h,opp:g,my:game.scores.h,op:game.scores.g});
   setTimeout(hostNext,REVEAL);
+}
+
+// ---------- sea scene
+(function buildSea(){
+  const z=$('#zones');
+  z.innerHTML=ZONES.map(([t,top])=>'<div class="zone" data-t="'+t+'" style="top:'+top+'%;'+(t===1?'border-top:none':'')+'"><span style="'+(t===1?'top:18px;':'')+'color:'+TIERS[t].col+'">'+TIERS[t].name+'<small>'+TIERS[t].depth.toLocaleString()+' m · '+TIERS[t].pts+' pts</small></span></div>').join('');
+  let d='';
+  for(let i=0;i<9;i++) d+='<div class="glow" style="left:'+(5+Math.random()*80)+'%;top:'+(62+Math.random()*30)+'%;animation-delay:'+(Math.random()*3).toFixed(2)+'s"></div>';
+  for(let i=0;i<4;i++) d+='<div class="fish" style="top:'+(18+i*12+Math.random()*6)+'%;animation-duration:'+(14+Math.random()*12).toFixed(1)+'s;animation-delay:-'+(Math.random()*20).toFixed(1)+'s;opacity:'+(0.9-i*0.18)+'"></div>';
+  $('#decor').innerHTML=d;
+  setInterval(()=>{ if(!$('#s-game').classList.contains('on')) return;
+    bubble(5+Math.random()*90, 60+Math.random()*38, 3+Math.random()*6); },500);
+})();
+function bubble(xPct,yPct,size){
+  const sea=$('#sea'), b=document.createElement('div');
+  b.className='bub'; b.style.left=xPct+'%'; b.style.top=yPct+'%'; b.style.width=b.style.height=size+'px';
+  b.style.animationDuration=(1.6+Math.random()*1.8)+'s';
+  sea.appendChild(b); setTimeout(()=>b.remove(),3600);
+}
+let diveToken=0;
+function resetDivers(){
+  diveToken++;
+  [['#dvMe',me.name,COLORS[0]],['#dvOpp',opp.name,COLORS[1]]].forEach(([s,n,c])=>{
+    const d=$(s); d.className='diver'; d.style.transition='none'; d.style.top='4%';
+    d.querySelector('.body').textContent=initials(n); d.querySelector('.body').style.background=c; d.style.color=c;
+    d.querySelector('.tag').textContent='0 m'; void d.offsetHeight; d.style.transition='';
+  });
+  document.querySelectorAll('.zone').forEach(z=>z.classList.remove('hit'));
+}
+function dive(sel,tier,delay){
+  const d=$(sel), T=TIERS[tier], tag=d.querySelector('.tag'), tok=diveToken;
+  setTimeout(()=>{
+    if(tok!==diveToken) return;
+    if(!tier){d.classList.add('miss');tag.textContent='✗ not on the list';return}
+    d.style.top=T.y+'%';
+    const t0=performance.now(), dur=2400, left=parseFloat(d.style.left);
+    const step=now=>{
+      if(tok!==diveToken) return;
+      const k=Math.min(1,(now-t0)/dur), e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+      tag.textContent=Math.round(T.depth*e).toLocaleString()+' m';
+      if(Math.random()<.35) bubble(left+(Math.random()*4-2),(4+(T.y-4)*e)+2,3+Math.random()*4);
+      if(k<1) requestAnimationFrame(step);
+      else{
+        tag.textContent=T.depth.toLocaleString()+' m · +'+T.pts;
+        if(tier>=4) d.classList.add('deep');
+        const z=document.querySelector('.zone[data-t="'+tier+'"]'); if(z) z.classList.add('hit');
+      }
+    };
+    requestAnimationFrame(step);
+  },delay);
 }
 
 // ---------- client view (both players)
@@ -535,79 +766,81 @@ function beginClient(n){
   hm.querySelector('.av').style.background=COLORS[0]; hm.querySelector('.av').textContent=initials(me.name);
   ho.querySelector('.av').style.background=COLORS[1]; ho.querySelector('.av').textContent=initials(opp.name);
   hm.querySelector('.nm').textContent=me.name+' (you)'; ho.querySelector('.nm').textContent=opp.name;
-  setScores(); $('#qText').textContent='Get ready…'; $('#qCat').textContent=''; $('#answers').innerHTML=''; $('#toast').textContent='';
+  setScores(); $('#qText').textContent='Get ready…'; $('#qCat').textContent=''; $('#toast').textContent='';
+  $('#reveal').classList.remove('on'); $('#guessIn').value=''; $('#guessIn').disabled=true; $('#guessBtn').disabled=true;
   $('#roundN').textContent='Round 1/'+n; $('#timeLeft').textContent=Math.round(DUR/1000);
-  show('s-game');
+  resetDivers(); show('s-game');
 }
 function setScores(){$('#hudMe .pts').textContent=myScore;$('#hudOpp .pts').textContent=oppScore}
 function stopClock(){if(clock){cancelAnimationFrame(clock);clock=null}}
 function showQuestion(m){
   cur=m; answered=false; qStart=performance.now();
+  const q=QS[m.qi];
   $('#hudMe .tick').classList.remove('on'); $('#hudOpp .tick').classList.remove('on');
   $('#roundN').textContent='Round '+(m.i+1)+'/'+m.n;
-  $('#qCat').textContent=m.cat; $('#qText').textContent=m.q; $('#toast').textContent=''; $('#toast').className='toast';
-  const box=$('#answers'); box.innerHTML='';
-  m.opts.forEach((o,k)=>{
-    const b=document.createElement('button'); b.className='ans';
-    b.innerHTML='<span class="k">'+"ABCD"[k]+'</span>'+esc(o)+'<span class="marks"></span>';
-    b.onclick=()=>pick(k); box.appendChild(b);
-  });
+  $('#qCat').textContent=q.cat; $('#qText').textContent=q.q; $('#toast').textContent=''; $('#toast').className='toast';
+  $('#reveal').classList.remove('on');
+  const gi=$('#guessIn'); gi.value=''; gi.disabled=false; $('#guessBtn').disabled=false; gi.focus();
+  resetDivers();
   stopClock();
   const tick=()=>{
-    const el=performance.now()-qStart, left=Math.max(0,DUR-el);
-    $('#timerBar').style.transform='scaleX('+(left/DUR)+')';
+    const el=performance.now()-qStart, left=Math.max(0,m.dur-el);
+    $('#timerBar').style.transform='scaleX('+(left/m.dur)+')';
     $('#timeLeft').textContent=Math.ceil(left/1000);
-    if(left<=0){ if(!answered){answered=true;lock();$('#toast').textContent="Time's up!";$('#toast').className='toast bad'} return }
+    if(left<=0){ if(!answered){ if($('#guessIn').value.trim()) submitGuess(); else {answered=true;lock();$('#toast').textContent="Time's up!";$('#toast').className='toast bad'} } return }
     clock=requestAnimationFrame(tick);
   };
   tick();
 }
-function lock(){document.querySelectorAll('.ans').forEach(b=>b.disabled=true)}
-function pick(k){
+function lock(){$('#guessIn').disabled=true;$('#guessBtn').disabled=true}
+function submitGuess(){
   if(answered||!cur) return;
-  answered=true;
-  const ms=Math.round(performance.now()-qStart);
-  lock(); document.querySelectorAll('.ans')[k].classList.add('picked');
+  const text=$('#guessIn').value.trim();
+  if(!text){$('#guessIn').focus();return}
+  answered=true; lock();
   $('#hudMe .tick').classList.add('on');
   $('#toast').textContent='Locked in! Waiting for '+opp.name+'…'; $('#toast').className='toast';
-  const m={t:'a',i:cur.i,c:k,ms};
+  const m={t:'a',i:cur.i,text};
   if(isHost) hostAnswer('h',m); else send(m);
 }
-document.addEventListener('keydown',e=>{
-  if(!$('#s-game').classList.contains('on')) return;
-  const k="1234".indexOf(e.key)>=0?"1234".indexOf(e.key):"abcd".indexOf(e.key.toLowerCase());
-  if(k>=0&&cur&&k<cur.opts.length) pick(k);
-});
+$('#guessForm').addEventListener('submit',e=>{e.preventDefault();submitGuess()});
 function markOpp(){$('#hudOpp .tick').classList.add('on')}
+function rcard(el,who,r,color){
+  const T=TIERS[r.tier];
+  el.innerHTML='<div class="who" style="color:'+color+'">'+esc(who)+'</div>'+
+    '<div class="ans">'+(r.text?esc(r.name||r.text):'<span style="color:var(--muted)">No answer</span>')+'</div>'+
+    '<div class="tier" style="color:'+T.col+'">'+(r.tier?T.name+' · '+T.depth.toLocaleString()+' m · +'+T.pts:(r.text?'Not a valid answer':'—'))+'</div>';
+}
 function reveal(m){
   stopClock(); answered=true; lock();
-  const bs=document.querySelectorAll('.ans');
-  bs.forEach((b,k)=>{
-    if(k===m.ans) b.classList.add('correct');
-    else if(k===m.myPick) b.classList.add('wrong');
-    else if(k!==m.oppPick) b.classList.add('dim');
-    const mk=b.querySelector('.marks');
-    if(k===m.myPick) mk.innerHTML+='<span style="background:'+COLORS[0]+'">YOU</span>';
-    if(k===m.oppPick) mk.innerHTML+='<span style="background:'+COLORS[1]+'">'+esc(opp.name.slice(0,8).toUpperCase())+'</span>';
-  });
-  myScore=m.my; oppScore=m.op; setScores();
+  const q=QS[cur.qi];
+  dive('#dvMe',m.mine.tier,150); dive('#dvOpp',m.opp.tier,700);
+  rcard($('#rcMe'),me.name+' (you)',m.mine,COLORS[0]);
+  rcard($('#rcOpp'),opp.name,m.opp,COLORS[1]);
+  const maxT=Math.max(...q.answers.map(a=>a.tier));
+  const deep=q.answers.filter(a=>a.tier>=Math.max(3,maxT-1)).sort((a,b)=>b.tier-a.tier).slice(0,8);
+  $('#deepList').innerHTML='Deepest answers on the list:<div class="chips">'+deep.map(a=>'<span style="border-color:'+TIERS[a.tier].col+'">'+esc(a.name)+' <b style="color:'+TIERS[a.tier].col+'">'+TIERS[a.tier].pts+'</b></span>').join('')+'</div>';
+  $('#reveal').classList.add('on');
   const t=$('#toast');
-  if(m.myPts>0){t.textContent='+'+m.myPts+' Correct!';t.className='toast good'}
-  else{t.textContent=m.myPick<0?"No answer. It was "+cur.opts[m.ans]:'Wrong. It was '+cur.opts[m.ans];t.className='toast bad'}
-  history.push({q:cur.q,a:cur.opts[m.ans],my:m.myPts,op:m.oppPts});
+  if(m.mine.tier>=4){t.textContent='Deep dive! +'+m.mine.pts;t.className='toast good'}
+  else if(m.mine.tier>0){t.textContent='+'+m.mine.pts;t.className='toast good'}
+  else{t.textContent=m.mine.text?'Not on the list':'No answer';t.className='toast bad'}
+  setTimeout(()=>{myScore=m.my;oppScore=m.op;setScores()},2600);
+  history.push({q:q.q,me:m.mine,op:m.opp});
 }
 function endGame(m){
   stopClock();
   const my=isHost?m.scores.h:m.scores.g, op=isHost?m.scores.g:m.scores.h;
   const win=my>op, tie=my===op;
-  $('#resIcon').textContent=tie?'🤝':win?'🏆':'💀';
+  $('#resIcon').textContent=tie?'🤝':win?'🏆':'🫧';
   $('#resTitle').textContent=tie?'Draw':win?'Victory':'Defeat';
   $('#resTitle').style.color=tie?'var(--text)':win?'var(--gold)':'var(--red)';
-  const correct=history.filter(h=>h.my>0).length;
-  $('#resSub').textContent='You got '+correct+'/'+history.length+' right.';
+  const deepest=history.reduce((b,h)=>h.me.tier>b?h.me.tier:b,0);
+  $('#resSub').textContent=deepest?'Your deepest dive: '+TIERS[deepest].name+' ('+TIERS[deepest].depth.toLocaleString()+' m)':'You never left the surface.';
   const f=(el,name,score,color,w)=>{el.className='pcard'+(w?' win':'');el.innerHTML='<div class="av" style="background:'+color+'">'+esc(initials(name))+'</div><div class="nm">'+esc(name)+'</div><div class="pts">'+score+'</div>'};
   f($('#finMe'),me.name+' (you)',my,COLORS[0],my>op); f($('#finOpp'),opp.name,op,COLORS[1],op>my);
-  $('#recap').innerHTML=history.map((h,i)=>'<div><span>'+(i+1)+'. '+esc(h.q)+' <b style="color:var(--text)">'+esc(h.a)+'</b></span><b><span style="color:'+COLORS[0]+'">+'+h.my+'</span> / <span style="color:'+COLORS[1]+'">+'+h.op+'</span></b></div>').join('');
+  const cell=(r,c)=>'<span style="color:'+c+'">'+esc(r.name||r.text||'—')+' <b style="color:'+TIERS[r.tier].col+'">+'+r.pts+'</b></span>';
+  $('#recap').innerHTML=history.map((h,i)=>'<div class="it"><div class="q">'+(i+1)+'. '+esc(h.q)+'</div><div class="a">'+cell(h.me,COLORS[0])+cell(h.op,COLORS[1])+'</div></div>').join('');
   $('#againBtn').disabled=!isHost; $('#againBtn').textContent=isHost?'Rematch':'Waiting for host rematch…';
   game=null; show('s-result');
 }
