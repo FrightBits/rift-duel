@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rift Duel</title>
+<meta name="description" content="1v1 League of Legends trivia. Send a friend the invite link and race to answer first.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<style>
+:root{
+  --bg:#0a0f1a; --bg2:#111a2b; --card:#152238; --card2:#1b2b46; --line:#26385a;
+  --text:#eef2f8; --muted:#8a9bb8; --gold:#e3b65b; --gold2:#f4d48a;
+  --teal:#2ec4c4; --red:#ff5d6c; --green:#3ddc84; --you:#2ec4c4; --opp:#ff8a4c;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:radial-gradient(1200px 600px at 50% -10%,#1a2a48 0%,var(--bg) 60%);background-color:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:16px}
+h1,h2,h3,.disp{font-family:Rajdhani,Inter,sans-serif;letter-spacing:.02em}
+button{font:inherit;cursor:pointer;border:none;color:inherit}
+input{font:inherit;color:var(--text)}
+.wrap{width:100%;max-width:760px;flex:1;display:flex;flex-direction:column}
+header{display:flex;align-items:center;justify-content:space-between;padding:6px 0 18px}
+.logo{display:flex;align-items:center;gap:10px;font-family:Rajdhani;font-weight:700;font-size:26px}
+.logo .gem{width:30px;height:30px;transform:rotate(45deg);border:2px solid var(--gold);background:linear-gradient(135deg,#2a3d63,#0d1526);box-shadow:0 0 18px #e3b65b55}
+.logo span b{color:var(--gold)}
+.pill{font-size:12px;color:var(--muted);border:1px solid var(--line);padding:5px 10px;border-radius:999px}
+.screen{display:none;flex:1;flex-direction:column}
+.screen.on{display:flex}
+.panel{background:linear-gradient(180deg,var(--card),var(--bg2));border:1px solid var(--line);border-radius:16px;padding:24px}
+.hero{text-align:center;padding:24px 0 22px}
+.hero h1{font-size:clamp(38px,8vw,60px);line-height:1;font-weight:700}
+.hero h1 em{font-style:normal;color:var(--gold)}
+.hero p{color:var(--muted);margin-top:10px}
+label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px;font-weight:600}
+.field{width:100%;background:#0b1322;border:1px solid var(--line);border-radius:10px;padding:13px 14px;outline:none}
+.field:focus{border-color:var(--gold)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 18px;border-radius:12px;font-weight:700;font-family:Rajdhani;font-size:19px;letter-spacing:.04em;text-transform:uppercase;transition:transform .08s,filter .15s}
+.btn:active{transform:translateY(1px)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn-gold{background:linear-gradient(180deg,var(--gold2),var(--gold));color:#1b1405;box-shadow:0 6px 20px #e3b65b33}
+.btn-ghost{background:var(--card2);border:1px solid var(--line)}
+.btn-ghost:hover,.btn-gold:hover{filter:brightness(1.08)}
+.row{display:flex;gap:10px}
+.or{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:12px;margin:18px 0;text-transform:uppercase;letter-spacing:.1em}
+.or:before,.or:after{content:"";flex:1;height:1px;background:var(--line)}
+.stack>*+*{margin-top:14px}
+.note{color:var(--muted);font-size:13px;text-align:center;margin-top:14px;min-height:18px}
+.err{color:var(--red)}
+.how{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px}
+.how div{background:#0d1628;border:1px solid var(--line);border-radius:12px;padding:12px;font-size:13px;color:var(--muted)}
+.how b{display:block;color:var(--text);font-family:Rajdhani;font-size:17px;margin-bottom:2px}
+
+/* lobby */
+.invite{display:flex;gap:8px}
+.invite .field{font-size:13px;color:var(--gold2)}
+.code{font-family:Rajdhani;font-size:44px;font-weight:700;letter-spacing:.25em;color:var(--gold);text-align:center;margin:6px 0 16px}
+.players{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;margin:22px 0}
+.pcard{background:#0d1628;border:1px solid var(--line);border-radius:14px;padding:18px 12px;text-align:center}
+.pcard .av{width:56px;height:56px;border-radius:50%;margin:0 auto 10px;display:grid;place-items:center;font-family:Rajdhani;font-weight:700;font-size:24px;color:#08101d}
+.pcard .nm{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pcard .st{font-size:12px;color:var(--muted);margin-top:2px}
+.pcard.empty .av{background:transparent;border:2px dashed var(--line);color:var(--muted)}
+.vs{font-family:Rajdhani;font-weight:700;font-size:28px;color:var(--gold)}
+.opts{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:16px}
+.chip{padding:8px 14px;border-radius:999px;background:#0d1628;border:1px solid var(--line);font-size:14px;font-weight:600}
+.chip.on{border-color:var(--gold);color:var(--gold2)}
+.chip[disabled]{cursor:default}
+
+/* game */
+.hud{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center}
+.score{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px;min-width:0;position:relative}
+.score.r{flex-direction:row-reverse;text-align:right}
+.score .av{width:40px;height:40px;flex:none;border-radius:50%;display:grid;place-items:center;font-family:Rajdhani;font-weight:700;color:#08101d}
+.score .who{min-width:0}
+.score .nm{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.score .pts{font-family:Rajdhani;font-weight:700;font-size:28px;line-height:1}
+.score .tick{position:absolute;top:-8px;font-size:11px;font-weight:700;background:var(--green);color:#062012;padding:2px 7px;border-radius:999px;opacity:0;transition:opacity .2s}
+.score .tick.on{opacity:1}
+.score:not(.r) .tick{left:12px}.score.r .tick{right:12px}
+.round{text-align:center;font-family:Rajdhani}
+.round .n{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em}
+.round .t{font-size:34px;font-weight:700;line-height:1}
+.timer{height:8px;background:#0d1628;border-radius:999px;overflow:hidden;margin:16px 0 18px;border:1px solid var(--line)}
+.timer i{display:block;height:100%;width:100%;background:linear-gradient(90deg,var(--teal),var(--gold));transform-origin:left;border-radius:999px}
+.qbox{background:linear-gradient(180deg,var(--card),var(--bg2));border:1px solid var(--line);border-radius:16px;padding:28px 22px;text-align:center;min-height:130px;display:flex;flex-direction:column;justify-content:center}
+.qbox .cat{font-size:12px;color:var(--gold);text-transform:uppercase;letter-spacing:.14em;font-weight:700;margin-bottom:8px}
+.qbox h2{font-family:Inter;font-weight:700;font-size:clamp(19px,3.6vw,25px);line-height:1.3}
+.answers{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.ans{position:relative;text-align:left;background:var(--card);border:2px solid var(--line);border-radius:14px;padding:16px 14px 16px 50px;font-weight:600;font-size:16px;min-height:64px;transition:border-color .15s,background .15s,transform .08s}
+.ans:hover:not(:disabled){border-color:#3d5788;background:var(--card2)}
+.ans .k{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:8px;display:grid;place-items:center;background:#0d1628;font-family:Rajdhani;font-weight:700;color:var(--muted)}
+.ans:disabled{cursor:default}
+.ans.picked{border-color:var(--gold)}
+.ans.correct{border-color:var(--green);background:#123a2a}
+.ans.wrong{border-color:var(--red);background:#3a1620}
+.ans .marks{position:absolute;right:10px;top:8px;display:flex;gap:4px}
+.ans .marks span{font-size:10px;font-weight:700;padding:2px 6px;border-radius:999px;color:#08101d}
+.ans.dim{opacity:.5}
+.toast{text-align:center;font-family:Rajdhani;font-weight:700;font-size:22px;margin-top:16px;min-height:30px}
+.toast.good{color:var(--green)}.toast.bad{color:var(--red)}
+
+/* results */
+.result{text-align:center}
+.result .crown{font-size:46px}
+.result h1{font-size:clamp(36px,7vw,54px);font-weight:700;margin:4px 0}
+.final{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:22px 0}
+.final .pcard .pts{font-family:Rajdhani;font-size:40px;font-weight:700}
+.final .pcard.win{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset}
+.recap{text-align:left;margin-top:8px;max-height:260px;overflow:auto;border-top:1px solid var(--line)}
+.recap div{display:flex;justify-content:space-between;gap:10px;padding:9px 2px;border-bottom:1px solid var(--line);font-size:13px}
+.recap div span:first-child{color:var(--muted)}
+.recap b{white-space:nowrap}
+footer{color:var(--muted);font-size:11px;text-align:center;padding:18px 0 4px}
+
+@media (max-width:560px){
+  .how{grid-template-columns:1fr}
+  .answers{grid-template-columns:1fr}
+  .ans{min-height:54px}
+  .score .av{display:none}
+  .score .pts{font-size:24px}
+  .panel{padding:18px}
+  .players{grid-template-columns:1fr;}
+  .vs{text-align:center}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo"><div class="gem"></div><span>RIFT<b>DUEL</b></span></div>
+    <div class="pill" id="status">Offline</div>
+  </header>
+
+  <!-- HOME -->
+  <section class="screen on" id="s-home">
+    <div class="hero">
+      <h1>1v1 <em>League</em> Trivia</h1>
+      <p>Create a room, send the link to a friend, and race to answer first.</p>
+    </div>
+    <div class="panel stack">
+      <div>
+        <label for="name">Summoner name</label>
+        <input class="field" id="name" maxlength="16" placeholder="Enter your name" autocomplete="off">
+      </div>
+      <button class="btn btn-gold" id="createBtn" style="width:100%">Create room &amp; get invite link</button>
+      <div class="or">or join a friend</div>
+      <div class="row">
+        <input class="field" id="joinCode" maxlength="6" placeholder="Room code" autocomplete="off" style="text-transform:uppercase">
+        <button class="btn btn-ghost" id="joinBtn">Join</button>
+      </div>
+      <div class="note" id="homeNote"></div>
+    </div>
+    <div class="how">
+      <div><b>1. Invite</b>Create a room and share the link.</div>
+      <div><b>2. Race</b>Same question for both. Faster correct answers score more.</div>
+      <div><b>3. Win</b>Highest score after all rounds takes it.</div>
+    </div>
+  </section>
+
+  <!-- LOBBY -->
+  <section class="screen" id="s-lobby">
+    <div class="panel">
+      <div id="hostInvite">
+        <label>Invite link: send this to your friend</label>
+        <div class="invite">
+          <input class="field" id="inviteLink" readonly>
+          <button class="btn btn-gold" id="copyBtn">Copy</button>
+        </div>
+        <div style="text-align:center;margin-top:16px"><label>Room code</label></div>
+        <div class="code" id="roomCode">------</div>
+      </div>
+      <div class="players">
+        <div class="pcard" id="lobbyMe"></div>
+        <div class="vs">VS</div>
+        <div class="pcard empty" id="lobbyOpp"></div>
+      </div>
+      <div class="opts" id="roundOpts">
+        <button class="chip" data-r="5">5 rounds</button>
+        <button class="chip on" data-r="10">10 rounds</button>
+        <button class="chip" data-r="15">15 rounds</button>
+      </div>
+      <button class="btn btn-gold" id="startBtn" style="width:100%" disabled>Waiting for opponent…</button>
+      <div class="note" id="lobbyNote"></div>
+    </div>
+  </section>
+
+  <!-- GAME -->
+  <section class="screen" id="s-game">
+    <div class="hud">
+      <div class="score" id="hudMe"><div class="tick">ANSWERED</div><div class="av"></div><div class="who"><div class="nm"></div><div class="pts">0</div></div></div>
+      <div class="round"><div class="n" id="roundN">Round 1/10</div><div class="t" id="timeLeft">15</div></div>
+      <div class="score r" id="hudOpp"><div class="tick">ANSWERED</div><div class="av"></div><div class="who"><div class="nm"></div><div class="pts">0</div></div></div>
+    </div>
+    <div class="timer"><i id="timerBar"></i></div>
+    <div class="qbox"><div class="cat" id="qCat"></div><h2 id="qText"></h2></div>
+    <div class="answers" id="answers"></div>
+    <div class="toast" id="toast"></div>
+  </section>
+
+  <!-- RESULT -->
+  <section class="screen" id="s-result">
+    <div class="panel result">
+      <div class="crown" id="resIcon">🏆</div>
+      <h1 id="resTitle">Victory</h1>
+      <div class="note" id="resSub" style="margin-top:0"></div>
+      <div class="final">
+        <div class="pcard" id="finMe"></div>
+        <div class="pcard" id="finOpp"></div>
+      </div>
+      <button class="btn btn-gold" id="againBtn" style="width:100%">Rematch</button>
+      <button class="btn btn-ghost" id="homeBtn" style="width:100%;margin-top:10px">Leave</button>
+      <div class="recap" id="recap"></div>
+    </div>
+  </section>
+
+  <footer>Fan-made trivia game. Not affiliated with or endorsed by Riot Games.</footer>
+</div>
+
+<script>
+// ---------- Questions: [category, question, correct, wrong, wrong, wrong]
+const Q = [
+["Lore","Which champion is known as the Nine-Tailed Fox?","Ahri","Kitsune","Neeko","Evelynn"],
+["Lore","Who is Jinx's older sister?","Vi","Caitlyn","Sevika","Mel"],
+["Lore","Which region is Garen from?","Demacia","Noxus","Ionia","Freljord"],
+["Lore","Lux is the sister of which champion?","Garen","Jarvan IV","Galio","Xin Zhao"],
+["Lore","What is the name of Teemo's homeland?","Bandle City","Piltover","Zaun","Targon"],
+["Lore","Which city-state is Ezreal from?","Piltover","Zaun","Bilgewater","Shurima"],
+["Lore","Draven's brother is…","Darius","Swain","Talon","Sion"],
+["Lore","Yasuo's brother is…","Yone","Zed","Shen","Master Yi"],
+["Lore","What is the name of Annie's teddy bear?","Tibbers","Willump","Bristle","Skaarl"],
+["Lore","What is the name of Kled's lizard mount?","Skaarl","Bristle","Willump","Tibbers"],
+["Lore","Sejuani rides a war boar named…","Bristle","Skaarl","Grunt","Rammus"],
+["Lore","Which bounty hunter is Gangplank's nemesis?","Miss Fortune","Illaoi","Graves","Nautilus"],
+["Lore","The two beings that make up Kindred are Lamb and…","Wolf","Fox","Raven","Bear"],
+["Lore","What catastrophic event created the Shadow Isles' Black Mist?","The Ruination","The Rune Wars","The Void Rising","The Darkin War"],
+["Lore","Which champion is the Sad Mummy?","Amumu","Nasus","Renekton","Xerath"],
+["Lore","Which champion is the Blind Monk?","Lee Sin","Master Yi","Udyr","Shen"],
+["Lore","Which champion is the Darkin Blade?","Aatrox","Varus","Kayn","Naafiri"],
+["Lore","Which champion is the Rune Mage?","Ryze","Kassadin","Karma","Zilean"],
+["Lore","Who is the Unforgiven?","Yasuo","Yone","Riven","Talon"],
+["Lore","Which Ascended emperor of Shurima commands sand soldiers?","Azir","Nasus","Renekton","Xerath"],
+["Lore","Which Void champion is a giant floating eye?","Vel'Koz","Cho'Gath","Kog'Maw","Kassadin"],
+["Lore","Which champion is a magical cat?","Yuumi","Neeko","Rengar","Gnar"],
+["Lore","Which Freljord champion is the Frost Archer?","Ashe","Sejuani","Lissandra","Anivia"],
+["Lore","Which champion is a boy riding a yeti?","Nunu & Willump","Gnar","Ivern","Kled"],
+["Lore","Which champion switches between human and cougar form?","Nidalee","Rengar","Elise","Gnar"],
+["Champions","Which champion throws a lantern to save allies?","Thresh","Senna","Karma","Lulu"],
+["Champions","What is the name of Blitzcrank's Q?","Rocket Grab","Power Fist","Static Field","Overdrive"],
+["Champions","Which champion's ultimate is called Death Lotus?","Katarina","Akali","Irelia","Kayle"],
+["Champions","Which champion's ultimate is called Final Spark?","Lux","Xerath","Viktor","Vel'Koz"],
+["Champions","What is the name of Malphite's ultimate?","Unstoppable Force","Ground Slam","Seismic Shard","Rockslide"],
+["Champions","Which champion's ultimate, Requiem, hits every enemy champion on the map?","Karthus","Soraka","Ashe","Pantheon"],
+["Champions","Kog'Maw's title is…","The Mouth of the Abyss","The Eye of the Void","The Voidreaver","The Terror of the Void"],
+["Champions","Which champion is a scarecrow that spreads fear?","Fiddlesticks","Nocturne","Hecarim","Shaco"],
+["Champions","Which champion is a jungle ram-turtle-armadillo that rolls around?","Rammus","Malphite","Skarner","Zac"],
+["Champions","Which champion carries a giant gun named 'Fishbones'?","Jinx","Caitlyn","Graves","Tristana"],
+["Champions","Which champion is a living blob of green goo?","Zac","Gragas","Maokai","Ivern"],
+["Gameplay","How many players are on each team on Summoner's Rift?","5","4","6","3"],
+["Gameplay","What is the maximum champion level in a normal game?","18","16","20","25"],
+["Gameplay","Which summoner spell instantly blinks you a short distance?","Flash","Ghost","Teleport","Cleanse"],
+["Gameplay","Which summoner spell is almost always taken by junglers?","Smite","Ignite","Exhaust","Barrier"],
+["Gameplay","How many inhibitors does each team have?","3","2","4","5"],
+["Gameplay","How many towers (turrets) does each team start with on Summoner's Rift?","11","9","10","12"],
+["Gameplay","Which epic monster can be released to charge into a tower?","Rift Herald","Baron Nashor","Elder Dragon","Scuttle Crab"],
+["Gameplay","Which epic monster's buff lets you execute low-health enemies?","Elder Dragon","Baron Nashor","Mountain Drake","Rift Herald"],
+["Gameplay","Which neutral monster grants the red buff?","Red Brambleback","Blue Sentinel","Gromp","Crimson Raptor"],
+["Gameplay","Which neutral monster grants the blue buff?","Blue Sentinel","Gromp","Ancient Krug","Murk Wolf"],
+["Gameplay","Which item's active puts you in stasis for 2.5 seconds?","Zhonya's Hourglass","Guardian Angel","Banshee's Veil","Quicksilver Sash"],
+["Gameplay","Which Dragon Soul gives you a shield after not taking damage?","Mountain","Ocean","Infernal","Cloud"],
+["Gameplay","Which Dragon Soul is all about healing over time?","Ocean","Mountain","Hextech","Chemtech"],
+["Gameplay","Which lane do the ADC and support usually play?","Bottom","Top","Mid","Jungle"],
+["Gameplay","In ARAM, which map do you play on?","Howling Abyss","Twisted Treeline","Crystal Scar","Summoner's Rift"],
+["Gameplay","What do you destroy to win a game of League?","The Nexus","The Inhibitor","Baron Nashor","The Fountain"],
+["Gameplay","What does ARAM stand for?","All Random All Mid","All Ranked All Mid","Any Role Any Map","All Random Any Mode"],
+["Gameplay","Which currency (blue) is earned by playing and used to unlock champions?","Blue Essence","Riot Points","Orange Essence","Mythic Essence"],
+["Esports","Which team won the very first World Championship in 2011?","Fnatic","SK Telecom T1","Taipei Assassins","Moscow Five"],
+["Esports","Faker has spent his whole career on which team?","T1","Gen.G","DRX","Samsung Galaxy"],
+["Esports","Which team won Worlds 2023?","T1","Weibo Gaming","JD Gaming","Gen.G"],
+["Esports","Which team won Worlds 2024?","T1","Bilibili Gaming","Gen.G","Hanwha Life Esports"],
+["Esports","What does MSI stand for?","Mid-Season Invitational","Major Summer Invitational","Mid-Split International","Masters Series International"],
+["Esports","Which team won Worlds 2022 in a huge underdog run?","DRX","T1","JD Gaming","Gen.G"],
+["Esports","Which team won Worlds 2018?","Invictus Gaming","Fnatic","G2 Esports","Cloud9"],
+["General","In what year was League of Legends released?","2009","2007","2011","2012"],
+["General","Which studio animated the Arcane series?","Fortiche","Studio Ghibli","Sony Pictures Animation","Pixar"],
+["General","Arcane is mostly set in which two cities?","Piltover and Zaun","Demacia and Noxus","Ionia and Noxus","Bilgewater and Shurima"],
+["General","Which virtual K-pop girl group features Ahri, Akali, Evelynn and Kai'Sa?","K/DA","Pentakill","True Damage","HEARTSTEEL"],
+["General","Which virtual metal band features Karthus, Mordekaiser and Yorick?","Pentakill","K/DA","True Damage","HEARTSTEEL"],
+["General","Killing all five enemy champions in quick succession is called a…","Pentakill","Ace","Quadra","Rampage"],
+];
+
+const DUR = 15000, REVEAL = 3200;
+const $ = s => document.querySelector(s);
+const COLORS = ["#2ec4c4","#ff8a4c"];
+
+// ---------- state
+let peer=null, conn=null, isHost=false, me={name:""}, opp={name:""};
+let rounds=10, game=null; // host: {qs, i, picks:{h,g}, scores:{h,g}, timer}
+let cur=null; // client view of current question
+let myScore=0, oppScore=0, history=[];
+
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id))}
+function setStatus(t){$('#status').textContent=t}
+function initials(n){return (n||"?").trim().slice(0,1).toUpperCase()}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a}
+function code6(){const c="ABCDEFGHJKMNPQRSTUVWXYZ23456789";let s="";for(let i=0;i<6;i++)s+=c[Math.random()*c.length|0];return s}
+const PFX="riftduel-v1-";
+
+try{$('#name').value=localStorage.getItem('rd-name')||""}catch(e){}
+const params=new URLSearchParams(location.search);
+const inviteRoom=(params.get('room')||"").toUpperCase();
+if(inviteRoom){
+  $('#joinCode').value=inviteRoom;
+  $('#createBtn').style.display='none';
+  document.querySelector('.or').textContent='';
+  document.querySelector('.or').style.display='none';
+  $('#joinBtn').textContent='Join duel';
+  $('#homeNote').textContent='You were invited! Enter your name and hit Join.';
+}
+
+function getName(){
+  const n=$('#name').value.trim();
+  if(!n){$('#homeNote').innerHTML='<span class="err">Enter a name first.</span>';$('#name').focus();return null}
+  try{localStorage.setItem('rd-name',n)}catch(e){}
+  return n;
+}
+
+// ---------- networking
+function send(m){if(conn&&conn.open)conn.send(m)}
+
+function createRoom(){
+  const n=getName(); if(!n) return;
+  me.name=n; isHost=true;
+  $('#createBtn').disabled=true; $('#homeNote').textContent='Creating room…';
+  const code=code6();
+  peer=new Peer(PFX+code);
+  peer.on('open',()=>{
+    setStatus('Room '+code);
+    const link=location.origin+location.pathname+'?room='+code;
+    $('#inviteLink').value=link; $('#roomCode').textContent=code;
+    renderLobby(); show('s-lobby');
+  });
+  peer.on('connection',c=>{
+    if(conn&&conn.open){c.on('open',()=>{c.send({t:'full'});setTimeout(()=>c.close(),300)});return}
+    conn=c; wire();
+  });
+  peer.on('error',e=>{
+    if(e.type==='unavailable-id'){peer.destroy();createRoom();return}
+    $('#createBtn').disabled=false;
+    $('#homeNote').innerHTML='<span class="err">Connection error: '+esc(e.type||e)+'</span>';
+  });
+}
+
+function joinRoom(){
+  const n=getName(); if(!n) return;
+  const code=$('#joinCode').value.trim().toUpperCase();
+  if(code.length!==6){$('#homeNote').innerHTML='<span class="err">Room codes are 6 characters.</span>';return}
+  me.name=n; isHost=false;
+  $('#joinBtn').disabled=true; $('#homeNote').textContent='Connecting…';
+  peer=new Peer();
+  peer.on('open',()=>{
+    conn=peer.connect(PFX+code,{reliable:true});
+    wire();
+    setTimeout(()=>{if(!conn||!conn.open){$('#joinBtn').disabled=false;$('#homeNote').innerHTML='<span class="err">Could not reach that room. Check the code or ask your friend for a new link.</span>'}},9000);
+  });
+  peer.on('error',e=>{
+    $('#joinBtn').disabled=false;
+    $('#homeNote').innerHTML='<span class="err">'+(e.type==='peer-unavailable'?'Room not found. It may have closed.':'Connection error: '+esc(e.type||e))+'</span>';
+  });
+}
+
+function wire(){
+  conn.on('open',()=>{send({t:'hello',name:me.name}); setStatus(isHost?'Opponent connected':'Connected')});
+  conn.on('data',onMsg);
+  conn.on('close',onDrop);
+  conn.on('error',onDrop);
+}
+function onDrop(){
+  if(!conn) return;
+  conn=null; opp.name="";
+  if(game&&game.timer) clearTimeout(game.timer);
+  game=null; stopClock();
+  setStatus('Opponent left');
+  if(isHost){renderLobby(); show('s-lobby'); $('#lobbyNote').textContent='Your opponent disconnected. Share the link again to play.'}
+  else{show('s-home'); $('#joinBtn').disabled=false; $('#homeNote').innerHTML='<span class="err">Disconnected from the host.</span>'}
+}
+
+function onMsg(m){
+  switch(m.t){
+    case 'full': $('#homeNote').innerHTML='<span class="err">That room already has two players.</span>'; $('#joinBtn').disabled=false; break;
+    case 'hello': opp.name=String(m.name||'Opponent').slice(0,16); renderLobby(); show('s-lobby'); $('#lobbyNote').textContent=''; break;
+    case 'rounds': rounds=m.n; renderLobby(); break;
+    case 'begin': beginClient(m.n); break;
+    case 'q': showQuestion(m); break;
+    case 'oa': markOpp(); break;
+    case 'r': reveal(m); break;
+    case 'end': endGame(m); break;
+    // host-side
+    case 'a': if(isHost) hostAnswer('g',m); break;
+  }
+}
+
+// ---------- lobby
+function pc(el,name,color,sub){
+  if(!name){el.className='pcard empty';el.innerHTML='<div class="av">?</div><div class="nm">Waiting…</div><div class="st">Send the invite link</div>';return}
+  el.className='pcard';
+  el.innerHTML='<div class="av" style="background:'+color+'">'+esc(initials(name))+'</div><div class="nm">'+esc(name)+'</div><div class="st">'+sub+'</div>';
+}
+function renderLobby(){
+  $('#hostInvite').style.display=isHost?'':'none';
+  pc($('#lobbyMe'),me.name,COLORS[0],isHost?'Host · You':'You');
+  pc($('#lobbyOpp'),opp.name,COLORS[1],isHost?'Challenger':'Host');
+  document.querySelectorAll('#roundOpts .chip').forEach(c=>{c.classList.toggle('on',+c.dataset.r===rounds);c.disabled=!isHost});
+  const sb=$('#startBtn');
+  if(isHost){sb.style.display='';sb.disabled=!opp.name;sb.textContent=opp.name?'Start duel':'Waiting for opponent…'}
+  else{sb.style.display='';sb.disabled=true;sb.textContent='Waiting for host to start…'}
+}
+$('#roundOpts').addEventListener('click',e=>{
+  const c=e.target.closest('.chip'); if(!c||!isHost) return;
+  rounds=+c.dataset.r; renderLobby(); send({t:'rounds',n:rounds});
+});
+$('#copyBtn').onclick=async()=>{
+  const v=$('#inviteLink').value;
+  try{await navigator.clipboard.writeText(v)}catch(e){$('#inviteLink').select();document.execCommand('copy')}
+  $('#copyBtn').textContent='Copied!'; setTimeout(()=>$('#copyBtn').textContent='Copy',1500);
+};
+$('#createBtn').onclick=createRoom;
+$('#joinBtn').onclick=joinRoom;
+$('#joinCode').addEventListener('keydown',e=>{if(e.key==='Enter')joinRoom()});
+$('#startBtn').onclick=()=>{if(isHost&&opp.name) hostStart()};
+$('#againBtn').onclick=()=>{
+  if(isHost){if(opp.name) hostStart()}
+};
+$('#homeBtn').onclick=()=>{location.href=location.pathname};
+
+// ---------- host game loop
+function hostStart(){
+  const qs=shuffle(Q).slice(0,rounds).map(q=>{
+    const opts=shuffle(q.slice(2));
+    return {cat:q[0],q:q[1],opts,ans:opts.indexOf(q[2])};
+  });
+  game={qs,i:-1,scores:{h:0,g:0},picks:{},timer:null,log:[]};
+  send({t:'begin',n:rounds}); beginClient(rounds);
+  setTimeout(hostNext,900);
+}
+function hostNext(){
+  game.i++;
+  if(game.i>=game.qs.length){
+    const m={t:'end',scores:game.scores};
+    send(m); endGame(m); return;
+  }
+  const q=game.qs[game.i]; game.picks={};
+  const m={t:'q',i:game.i,n:game.qs.length,cat:q.cat,q:q.q,opts:q.opts,dur:DUR};
+  send(m); showQuestion(m);
+  game.timer=setTimeout(hostResolve,DUR+700);
+}
+function hostAnswer(who,m){
+  if(!game||m.i!==game.i||game.picks[who]) return;
+  game.picks[who]={c:m.c,ms:Math.min(m.ms,DUR)};
+  if(who==='g') markOpp(); else send({t:'oa'});
+  if(game.picks.h&&game.picks.g){clearTimeout(game.timer);setTimeout(hostResolve,500)}
+}
+function pts(p,ans){if(!p||p.c!==ans) return 0;return Math.round(500+500*(1-p.ms/DUR))}
+function hostResolve(){
+  if(!game||game.resolved===game.i) return;
+  game.resolved=game.i;
+  const q=game.qs[game.i];
+  const ph=pts(game.picks.h,q.ans), pg=pts(game.picks.g,q.ans);
+  game.scores.h+=ph; game.scores.g+=pg;
+  const base={t:'r',i:game.i,ans:q.ans};
+  const hostView={...base,myPick:game.picks.h?game.picks.h.c:-1,oppPick:game.picks.g?game.picks.g.c:-1,myPts:ph,oppPts:pg,my:game.scores.h,op:game.scores.g};
+  const guestView={...base,myPick:hostView.oppPick,oppPick:hostView.myPick,myPts:pg,oppPts:ph,my:game.scores.g,op:game.scores.h};
+  send(guestView); reveal(hostView);
+  setTimeout(hostNext,REVEAL);
+}
+
+// ---------- client view (both players)
+let clock=null, qStart=0, answered=false;
+function beginClient(n){
+  rounds=n; myScore=0; oppScore=0; history=[];
+  const hm=$('#hudMe'), ho=$('#hudOpp');
+  hm.querySelector('.av').style.background=COLORS[0]; hm.querySelector('.av').textContent=initials(me.name);
+  ho.querySelector('.av').style.background=COLORS[1]; ho.querySelector('.av').textContent=initials(opp.name);
+  hm.querySelector('.nm').textContent=me.name+' (you)'; ho.querySelector('.nm').textContent=opp.name;
+  setScores(); $('#qText').textContent='Get ready…'; $('#qCat').textContent=''; $('#answers').innerHTML=''; $('#toast').textContent='';
+  $('#roundN').textContent='Round 1/'+n; $('#timeLeft').textContent=Math.round(DUR/1000);
+  show('s-game');
+}
+function setScores(){$('#hudMe .pts').textContent=myScore;$('#hudOpp .pts').textContent=oppScore}
+function stopClock(){if(clock){cancelAnimationFrame(clock);clock=null}}
+function showQuestion(m){
+  cur=m; answered=false; qStart=performance.now();
+  $('#hudMe .tick').classList.remove('on'); $('#hudOpp .tick').classList.remove('on');
+  $('#roundN').textContent='Round '+(m.i+1)+'/'+m.n;
+  $('#qCat').textContent=m.cat; $('#qText').textContent=m.q; $('#toast').textContent=''; $('#toast').className='toast';
+  const box=$('#answers'); box.innerHTML='';
+  m.opts.forEach((o,k)=>{
+    const b=document.createElement('button'); b.className='ans';
+    b.innerHTML='<span class="k">'+"ABCD"[k]+'</span>'+esc(o)+'<span class="marks"></span>';
+    b.onclick=()=>pick(k); box.appendChild(b);
+  });
+  stopClock();
+  const tick=()=>{
+    const el=performance.now()-qStart, left=Math.max(0,DUR-el);
+    $('#timerBar').style.transform='scaleX('+(left/DUR)+')';
+    $('#timeLeft').textContent=Math.ceil(left/1000);
+    if(left<=0){ if(!answered){answered=true;lock();$('#toast').textContent="Time's up!";$('#toast').className='toast bad'} return }
+    clock=requestAnimationFrame(tick);
+  };
+  tick();
+}
+function lock(){document.querySelectorAll('.ans').forEach(b=>b.disabled=true)}
+function pick(k){
+  if(answered||!cur) return;
+  answered=true;
+  const ms=Math.round(performance.now()-qStart);
+  lock(); document.querySelectorAll('.ans')[k].classList.add('picked');
+  $('#hudMe .tick').classList.add('on');
+  $('#toast').textContent='Locked in! Waiting for '+opp.name+'…'; $('#toast').className='toast';
+  const m={t:'a',i:cur.i,c:k,ms};
+  if(isHost) hostAnswer('h',m); else send(m);
+}
+document.addEventListener('keydown',e=>{
+  if(!$('#s-game').classList.contains('on')) return;
+  const k="1234".indexOf(e.key)>=0?"1234".indexOf(e.key):"abcd".indexOf(e.key.toLowerCase());
+  if(k>=0&&cur&&k<cur.opts.length) pick(k);
+});
+function markOpp(){$('#hudOpp .tick').classList.add('on')}
+function reveal(m){
+  stopClock(); answered=true; lock();
+  const bs=document.querySelectorAll('.ans');
+  bs.forEach((b,k)=>{
+    if(k===m.ans) b.classList.add('correct');
+    else if(k===m.myPick) b.classList.add('wrong');
+    else if(k!==m.oppPick) b.classList.add('dim');
+    const mk=b.querySelector('.marks');
+    if(k===m.myPick) mk.innerHTML+='<span style="background:'+COLORS[0]+'">YOU</span>';
+    if(k===m.oppPick) mk.innerHTML+='<span style="background:'+COLORS[1]+'">'+esc(opp.name.slice(0,8).toUpperCase())+'</span>';
+  });
+  myScore=m.my; oppScore=m.op; setScores();
+  const t=$('#toast');
+  if(m.myPts>0){t.textContent='+'+m.myPts+' Correct!';t.className='toast good'}
+  else{t.textContent=m.myPick<0?"No answer. It was "+cur.opts[m.ans]:'Wrong. It was '+cur.opts[m.ans];t.className='toast bad'}
+  history.push({q:cur.q,a:cur.opts[m.ans],my:m.myPts,op:m.oppPts});
+}
+function endGame(m){
+  stopClock();
+  const my=isHost?m.scores.h:m.scores.g, op=isHost?m.scores.g:m.scores.h;
+  const win=my>op, tie=my===op;
+  $('#resIcon').textContent=tie?'🤝':win?'🏆':'💀';
+  $('#resTitle').textContent=tie?'Draw':win?'Victory':'Defeat';
+  $('#resTitle').style.color=tie?'var(--text)':win?'var(--gold)':'var(--red)';
+  const correct=history.filter(h=>h.my>0).length;
+  $('#resSub').textContent='You got '+correct+'/'+history.length+' right.';
+  const f=(el,name,score,color,w)=>{el.className='pcard'+(w?' win':'');el.innerHTML='<div class="av" style="background:'+color+'">'+esc(initials(name))+'</div><div class="nm">'+esc(name)+'</div><div class="pts">'+score+'</div>'};
+  f($('#finMe'),me.name+' (you)',my,COLORS[0],my>op); f($('#finOpp'),opp.name,op,COLORS[1],op>my);
+  $('#recap').innerHTML=history.map((h,i)=>'<div><span>'+(i+1)+'. '+esc(h.q)+' <b style="color:var(--text)">'+esc(h.a)+'</b></span><b><span style="color:'+COLORS[0]+'">+'+h.my+'</span> / <span style="color:'+COLORS[1]+'">+'+h.op+'</span></b></div>').join('');
+  $('#againBtn').disabled=!isHost; $('#againBtn').textContent=isHost?'Rematch':'Waiting for host rematch…';
+  game=null; show('s-result');
+}
+</script>
+</body>
+</html>
