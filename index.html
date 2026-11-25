@@ -215,7 +215,7 @@ footer{color:var(--muted);font-size:11px;text-align:center;padding:18px 0 4px}
     </div>
   </section>
 
-  <footer>Fan-made trivia game. Not affiliated with or endorsed by Riot Games.</footer>
+  <footer>Version 2 · Fan-made trivia game. Not affiliated with or endorsed by Riot Games.</footer>
 </div>
 
 <script>
@@ -414,11 +414,11 @@ function joinRoom(){
   me.name=n; isHost=false; room=code; oppId=null;
   $('#joinBtn').disabled=true; $('#homeNote').textContent='Connecting…';
   netStart(()=>{
-    $('#homeNote').textContent='Looking for the host…'; joinedAt=Date.now();
+    $('#homeNote').textContent='Looking for the host…'; setStatus('Searching for room'); joinedAt=Date.now();
     const hi=()=>{
       if(oppId){clearInterval(helloTimer);return}
       rawSend({t:'hello',name:me.name});
-      if(Date.now()-joinedAt>15000) $('#homeNote').innerHTML='<span class="err">Still looking for the room. Make sure the host\'s tab is open and the code is right…</span>';
+      if(Date.now()-joinedAt>15000) $('#homeNote').innerHTML='<span class="err">Host not found yet. Your friend must keep their tab open and be on Version 2 (shown at the bottom of the page). If not, they should press Ctrl+F5 and create a new room.</span>';
       if(Date.now()-joinedAt>60000){clearInterval(helloTimer);$('#joinBtn').disabled=false;$('#homeNote').innerHTML='<span class="err">Room not found. Ask your friend for a fresh invite link.</span>'}
     };
     hi(); helloTimer=setInterval(hi,1500); startHeartbeat();
