@@ -7,7 +7,7 @@
 <meta name="description" content="1v1 League of Legends trivia. Send a friend the invite link and race to answer first.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js"></script>
 <style>
 :root{
   --bg:#0a0f1a; --bg2:#111a2b; --card:#152238; --card2:#1b2b46; --line:#26385a;
@@ -295,7 +295,7 @@ const $ = s => document.querySelector(s);
 const COLORS = ["#2ec4c4","#ff8a4c"];
 
 // ---------- state
-let peer=null, conn=null, isHost=false, me={name:""}, opp={name:""};
+let isHost=false, me={name:""}, opp={name:""};
 let rounds=10, game=null; // host: {qs, i, picks:{h,g}, scores:{h,g}, timer}
 let cur=null; // client view of current question
 let myScore=0, oppScore=0, history=[];
@@ -306,7 +306,6 @@ function initials(n){return (n||"?").trim().slice(0,1).toUpperCase()}
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
 function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a}
 function code6(){const c="ABCDEFGHJKMNPQRSTUVWXYZ23456789";let s="";for(let i=0;i<6;i++)s+=c[Math.random()*c.length|0];return s}
-const PFX="riftduel-v1-";
 
 try{$('#name').value=localStorage.getItem('rd-name')||""}catch(e){}
 const params=new URLSearchParams(location.search);
@@ -327,29 +326,82 @@ function getName(){
   return n;
 }
 
-// ---------- networking
-function send(m){if(conn&&conn.open)conn.send(m)}
+// ---------- networking: messages are relayed through public MQTT brokers over secure WebSockets,
+// so it works across home routers that block direct peer-to-peer links. We connect to several
+// brokers at once, publish to all of them, and drop duplicates.
+const BROKERS=["wss://broker.emqx.io:8084/mqtt","wss://broker.hivemq.com:8884/mqtt","wss://test.mosquitto.org:8081/mqtt"];
+const TOPIC="riftduel/v2/";
+const myId=Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4);
+let clients=[], seen=new Set(), seq=0, room="", oppId=null, lastSeen=0, hbTimer=null, helloTimer=null, joinedAt=0;
+
+function netStart(onReady,onFail){
+  let ready=false;
+  BROKERS.forEach(url=>{
+    let c; try{c=mqtt.connect(url,{connectTimeout:8000,reconnectPeriod:3000,clean:true,keepalive:30})}catch(e){return}
+    c.on('connect',()=>{c.subscribe(TOPIC+room+'/'+(isHost?'h':'g'));if(!ready){ready=true;onReady()}});
+    c.on('message',(t,buf)=>{
+      let m; try{m=JSON.parse(buf.toString())}catch(e){return}
+      if(!m||m.from===myId||seen.has(m.mid)) return;
+      seen.add(m.mid); if(seen.size>2000) seen=new Set();
+      route(m);
+    });
+    c.on('error',()=>{});
+    clients.push(c);
+  });
+  setTimeout(()=>{if(!ready) onFail()},12000);
+}
+function rawSend(m,to){
+  m.from=myId; m.mid=myId+':'+(seq++); if(to) m.to=to;
+  const t=TOPIC+room+'/'+(isHost?'g':'h'), s=JSON.stringify(m);
+  clients.forEach(c=>{if(c.connected) c.publish(t,s)});
+}
+function send(m){if(isHost){if(oppId) rawSend(m,oppId)}else rawSend(m)}
+
+function route(m){
+  if(isHost){
+    if(m.t==='hello'){
+      if(oppId&&oppId!==m.from){rawSend({t:'full'},m.from);return}
+      const fresh=!oppId; oppId=m.from; lastSeen=Date.now();
+      send({t:'welcome',name:me.name,rounds});
+      if(fresh){opp.name=String(m.name||'Opponent').slice(0,16);setStatus('Opponent connected');renderLobby();show('s-lobby');$('#lobbyNote').textContent=''}
+      return;
+    }
+    if(m.from!==oppId) return;
+  }else{
+    if(m.to&&m.to!==myId) return;
+    if(m.t==='full'&&!oppId){clearInterval(helloTimer);$('#homeNote').innerHTML='<span class="err">That room already has two players.</span>';$('#joinBtn').disabled=false;return}
+    if(m.t==='welcome'){
+      if(oppId) return;
+      oppId=m.from; clearInterval(helloTimer); lastSeen=Date.now();
+      opp.name=String(m.name||'Host').slice(0,16); rounds=m.rounds||rounds;
+      setStatus('Connected'); renderLobby(); show('s-lobby'); return;
+    }
+    if(m.from!==oppId) return;
+  }
+  lastSeen=Date.now();
+  onMsg(m);
+}
+function startHeartbeat(){
+  clearInterval(hbTimer);
+  hbTimer=setInterval(()=>{
+    if(!oppId) return;
+    send({t:'ping'});
+    if(Date.now()-lastSeen>30000) onDrop();
+  },3000);
+}
+addEventListener('pagehide',()=>{if(oppId) send({t:'bye'})});
 
 function createRoom(){
   const n=getName(); if(!n) return;
-  me.name=n; isHost=true;
+  me.name=n; isHost=true; room=code6();
   $('#createBtn').disabled=true; $('#homeNote').textContent='Creating room…';
-  const code=code6();
-  peer=new Peer(PFX+code);
-  peer.on('open',()=>{
-    setStatus('Room '+code);
-    const link=location.origin+location.pathname+'?room='+code;
-    $('#inviteLink').value=link; $('#roomCode').textContent=code;
-    renderLobby(); show('s-lobby');
-  });
-  peer.on('connection',c=>{
-    if(conn&&conn.open){c.on('open',()=>{c.send({t:'full'});setTimeout(()=>c.close(),300)});return}
-    conn=c; wire();
-  });
-  peer.on('error',e=>{
-    if(e.type==='unavailable-id'){peer.destroy();createRoom();return}
+  netStart(()=>{
+    setStatus('Room '+room);
+    $('#inviteLink').value=location.origin+location.pathname+'?room='+room; $('#roomCode').textContent=room;
+    startHeartbeat(); renderLobby(); show('s-lobby');
+  },()=>{
     $('#createBtn').disabled=false;
-    $('#homeNote').innerHTML='<span class="err">Connection error: '+esc(e.type||e)+'</span>';
+    $('#homeNote').innerHTML='<span class="err">Could not reach the game servers. Check your internet connection and try again.</span>';
   });
 }
 
@@ -357,29 +409,28 @@ function joinRoom(){
   const n=getName(); if(!n) return;
   const code=$('#joinCode').value.trim().toUpperCase();
   if(code.length!==6){$('#homeNote').innerHTML='<span class="err">Room codes are 6 characters.</span>';return}
-  me.name=n; isHost=false;
+  clearInterval(helloTimer);
+  if(clients.length){clients.forEach(c=>c.end(true));clients=[]}
+  me.name=n; isHost=false; room=code; oppId=null;
   $('#joinBtn').disabled=true; $('#homeNote').textContent='Connecting…';
-  peer=new Peer();
-  peer.on('open',()=>{
-    conn=peer.connect(PFX+code,{reliable:true});
-    wire();
-    setTimeout(()=>{if(!conn||!conn.open){$('#joinBtn').disabled=false;$('#homeNote').innerHTML='<span class="err">Could not reach that room. Check the code or ask your friend for a new link.</span>'}},9000);
-  });
-  peer.on('error',e=>{
+  netStart(()=>{
+    $('#homeNote').textContent='Looking for the host…'; joinedAt=Date.now();
+    const hi=()=>{
+      if(oppId){clearInterval(helloTimer);return}
+      rawSend({t:'hello',name:me.name});
+      if(Date.now()-joinedAt>15000) $('#homeNote').innerHTML='<span class="err">Still looking for the room. Make sure the host\'s tab is open and the code is right…</span>';
+      if(Date.now()-joinedAt>60000){clearInterval(helloTimer);$('#joinBtn').disabled=false;$('#homeNote').innerHTML='<span class="err">Room not found. Ask your friend for a fresh invite link.</span>'}
+    };
+    hi(); helloTimer=setInterval(hi,1500); startHeartbeat();
+  },()=>{
     $('#joinBtn').disabled=false;
-    $('#homeNote').innerHTML='<span class="err">'+(e.type==='peer-unavailable'?'Room not found. It may have closed.':'Connection error: '+esc(e.type||e))+'</span>';
+    $('#homeNote').innerHTML='<span class="err">Could not reach the game servers. Check your internet connection and try again.</span>';
   });
 }
 
-function wire(){
-  conn.on('open',()=>{send({t:'hello',name:me.name}); setStatus(isHost?'Opponent connected':'Connected')});
-  conn.on('data',onMsg);
-  conn.on('close',onDrop);
-  conn.on('error',onDrop);
-}
 function onDrop(){
-  if(!conn) return;
-  conn=null; opp.name="";
+  if(!oppId) return;
+  oppId=null; opp.name="";
   if(game&&game.timer) clearTimeout(game.timer);
   game=null; stopClock();
   setStatus('Opponent left');
@@ -389,8 +440,8 @@ function onDrop(){
 
 function onMsg(m){
   switch(m.t){
-    case 'full': $('#homeNote').innerHTML='<span class="err">That room already has two players.</span>'; $('#joinBtn').disabled=false; break;
-    case 'hello': opp.name=String(m.name||'Opponent').slice(0,16); renderLobby(); show('s-lobby'); $('#lobbyNote').textContent=''; break;
+    case 'ping': break;
+    case 'bye': onDrop(); break;
     case 'rounds': rounds=m.n; renderLobby(); break;
     case 'begin': beginClient(m.n); break;
     case 'q': showQuestion(m); break;
@@ -429,7 +480,7 @@ $('#copyBtn').onclick=async()=>{
 $('#createBtn').onclick=createRoom;
 $('#joinBtn').onclick=joinRoom;
 $('#joinCode').addEventListener('keydown',e=>{if(e.key==='Enter')joinRoom()});
-$('#startBtn').onclick=()=>{if(isHost&&opp.name) hostStart()};
+$('#startBtn').onclick=()=>{if(isHost&&oppId) hostStart()};
 $('#againBtn').onclick=()=>{
   if(isHost){if(opp.name) hostStart()}
 };
